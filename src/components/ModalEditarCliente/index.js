@@ -16,7 +16,7 @@ function ModalEditarCliente({ getClienteDetalhado }) {
     setTipoMensagem,
     setMensagemToast,
     setClienteDetalhado,
-    idCliente
+    idCliente,
   } = useGlobal();
   const [inputsClientes, setInputsClientes] = useState(inputClienteVazio);
   const [erroNome, setErroNome] = useState("");
@@ -25,7 +25,6 @@ function ModalEditarCliente({ getClienteDetalhado }) {
   const [erroTelefone, setErroTelefone] = useState("");
   const [salvarDadosCliente, setSalvarDadosCliente] = useState(false);
   const { token } = useAuth();
-
 
   useEffect(() => {
     if (clienteEdicao) {
@@ -91,7 +90,7 @@ function ModalEditarCliente({ getClienteDetalhado }) {
 
     try {
       const response = await fetch(
-        `https://api-equipe4of.herokuapp.com/clientes/${clienteDetalhado.id}`,
+        `${process.env.API_URL}/clientes/${clienteDetalhado.id}`,
         {
           method: "PUT",
           headers: {
@@ -104,14 +103,14 @@ function ModalEditarCliente({ getClienteDetalhado }) {
       const data = await response.json();
       if (!response.ok) {
         setExibirToast(true);
-        setTipoMensagem('erro');
+        setTipoMensagem("erro");
         setMensagemToast(data);
         return;
-      };
+      }
       await getClienteDetalhado(idCliente);
       setExibirToast(true);
-      setTipoMensagem('sucesso');
-      setMensagemToast('Edições do cadastro concluídas com sucesso');
+      setTipoMensagem("sucesso");
+      setMensagemToast("Edições do cadastro concluídas com sucesso");
 
       limparErros();
       fecharModalEditarCliente();
@@ -148,8 +147,9 @@ function ModalEditarCliente({ getClienteDetalhado }) {
               <input
                 type="text"
                 name="nome_cliente"
-                className={`form-cliente-input ${erroNome !== "" && "cadastrar-cliente-erro"
-                  }`}
+                className={`form-cliente-input ${
+                  erroNome !== "" && "cadastrar-cliente-erro"
+                }`}
                 value={inputsClientes.nome_cliente}
                 onChange={handleChange}
                 placeholder="Digite o nome"
@@ -163,8 +163,9 @@ function ModalEditarCliente({ getClienteDetalhado }) {
               <input
                 type="text"
                 name="email"
-                className={`form-cliente-input ${erroEmail !== "" && "cadastrar-cliente-erro"
-                  }`}
+                className={`form-cliente-input ${
+                  erroEmail !== "" && "cadastrar-cliente-erro"
+                }`}
                 value={inputsClientes.email}
                 onChange={handleChange}
                 placeholder="Digite o email"
@@ -178,8 +179,9 @@ function ModalEditarCliente({ getClienteDetalhado }) {
               <div className="cliente-input-container min-width-50">
                 <label htmlFor="cpf">CPF*</label>
                 <input
-                  className={`form-cliente-input ${erroCpf !== "" && "cadastrar-cliente-erro"
-                    }`}
+                  className={`form-cliente-input ${
+                    erroCpf !== "" && "cadastrar-cliente-erro"
+                  }`}
                   type="text"
                   name="cpf"
                   value={inputsClientes.cpf}
@@ -193,8 +195,9 @@ function ModalEditarCliente({ getClienteDetalhado }) {
               <div className="cliente-input-container min-width-50">
                 <label htmlFor="telefone">Telefone*</label>
                 <input
-                  className={`form-cliente-input ${erroTelefone !== "" && "cadastrar-cliente-erro"
-                    }`}
+                  className={`form-cliente-input ${
+                    erroTelefone !== "" && "cadastrar-cliente-erro"
+                  }`}
                   type="text"
                   name="telefone"
                   value={inputsClientes.telefone}
@@ -260,7 +263,7 @@ function ModalEditarCliente({ getClienteDetalhado }) {
               <div className="cliente-input-container min-width-60">
                 <label htmlFor="cidade">Cidade</label>
                 <input
-                  className='form-cliente-input'
+                  className="form-cliente-input"
                   type="text"
                   name="cidade"
                   value={inputsClientes.cidade}
@@ -271,7 +274,7 @@ function ModalEditarCliente({ getClienteDetalhado }) {
               <div className="cliente-input-container max-width-35">
                 <label htmlFor="estado">UF</label>
                 <input
-                  className='form-cliente-input'
+                  className="form-cliente-input"
                   type="text"
                   name="estado"
                   value={inputsClientes.estado}

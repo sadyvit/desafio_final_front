@@ -1,23 +1,23 @@
-import { useEffect, useState } from 'react';
-import iconeClienteOn from '../../assets/clientsOn.svg';
-import iconeHomeOff from '../../assets/homeOff.svg';
-import iconeAddCliente from '../../assets/icone-adicionar-cliente.svg';
-import iconeClientes from '../../assets/icone-clientes.svg';
-import iconeCobrancaInactive from '../../assets/icone-cobranca-inactive.svg';
-import iconeFiltro from '../../assets/icone-filtro.svg';
-import ModalCadastrarCliente from '../../components/ModalCadastrarCliente';
-import ModalCadastrarCobranca from '../../components/ModalCadastrarCobranca';
-import ModalEditarUsuario from '../../components/ModalEditarUsuario';
-import ModalSucessoAlterarCadastro from '../../components/ModalSucessoAlterarCadastro';
-import Sidebar from '../../components/Sidebar';
-import ClientesTable from '../../components/TabelaClientes';
-import ToastAlerta from '../../components/ToastAlerta';
-import UserMenu from '../../components/UserMenu';
-import useAuth from '../../hooks/useAuth';
-import useGlobal from '../../hooks/useGlobal';
-import DivNaoEncontrado from '../../components/DivNaoEncontrado';
-import Paginacao from '../../components/Paginacao';
-import './styles.css';
+import { useEffect, useState } from "react";
+import iconeClienteOn from "../../assets/clientsOn.svg";
+import iconeHomeOff from "../../assets/homeOff.svg";
+import iconeAddCliente from "../../assets/icone-adicionar-cliente.svg";
+import iconeClientes from "../../assets/icone-clientes.svg";
+import iconeCobrancaInactive from "../../assets/icone-cobranca-inactive.svg";
+import iconeFiltro from "../../assets/icone-filtro.svg";
+import ModalCadastrarCliente from "../../components/ModalCadastrarCliente";
+import ModalCadastrarCobranca from "../../components/ModalCadastrarCobranca";
+import ModalEditarUsuario from "../../components/ModalEditarUsuario";
+import ModalSucessoAlterarCadastro from "../../components/ModalSucessoAlterarCadastro";
+import Sidebar from "../../components/Sidebar";
+import ClientesTable from "../../components/TabelaClientes";
+import ToastAlerta from "../../components/ToastAlerta";
+import UserMenu from "../../components/UserMenu";
+import useAuth from "../../hooks/useAuth";
+import useGlobal from "../../hooks/useGlobal";
+import DivNaoEncontrado from "../../components/DivNaoEncontrado";
+import Paginacao from "../../components/Paginacao";
+import "./styles.css";
 
 function Clientes() {
   const {
@@ -50,8 +50,7 @@ function Clientes() {
       interval = setInterval(() => {
         setExibirToast(true);
       }, 1000);
-    }
-    else {
+    } else {
       clearInterval(interval);
     }
 
@@ -64,76 +63,87 @@ function Clientes() {
     }, 5000);
 
     return () => {
-      clearTimeout(timeout)
-    }
+      clearTimeout(timeout);
+    };
   }, [exibirToast]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       setAlteracaoUsuarioSucesso(false);
-    },
-      3000);
+    }, 3000);
 
     return () => {
-      clearTimeout(timeout)
-    }
+      clearTimeout(timeout);
+    };
   }, [alteracaoUsuarioSucesso]);
 
   useEffect(() => {
     getClientes();
-  }, [])
-
+  }, []);
 
   async function getDetalharCobrancaCliente(idCliente) {
     try {
-      const response = await fetch(`https://api-equipe4of.herokuapp.com/cobrancas/${idCliente}`, {
-        method: 'GET',
-        'Authorization': `Bearer ${token}`
-      })
+      const response = await fetch(
+        `${process.env.API_URL}/cobrancas/${idCliente}`,
+        {
+          method: "GET",
+          Authorization: `Bearer ${token}`,
+        }
+      );
       const data = await response.json();
       setCobrancasListDetalhar(data);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
   async function getClientes() {
     try {
-      const response = await fetch('https://api-equipe4of.herokuapp.com/clientes', {
-        method: 'GET',
-        'Authorization': `Bearer ${token}`
+      const response = await fetch(`${process.env.API_URL}/clientes`, {
+        method: "GET",
+        Authorization: `Bearer ${token}`,
       });
 
       const data = await response.json();
       setClientesList(data.clientes);
-      const emDia = data.clientes.filter(d => d.status === true);
-      const inadimplentes = data.clientes.filter(d => d.status === false);
-      setTotalClientes(clickFiltroClientes === 'emDia' ? emDia.length :
-        clickFiltroClientes === 'inadimplentes' ? inadimplentes.length :
-          data.quantidadeClientes[0].count);
+      const emDia = data.clientes.filter((d) => d.status === true);
+      const inadimplentes = data.clientes.filter((d) => d.status === false);
+      setTotalClientes(
+        clickFiltroClientes === "emDia"
+          ? emDia.length
+          : clickFiltroClientes === "inadimplentes"
+          ? inadimplentes.length
+          : data.quantidadeClientes[0].count
+      );
       setClientesListTemp(
-        clickFiltroClientes === 'emDia' ? emDia :
-          clickFiltroClientes === 'inadimplentes' ? inadimplentes :
-            data.clientes);
+        clickFiltroClientes === "emDia"
+          ? emDia
+          : clickFiltroClientes === "inadimplentes"
+          ? inadimplentes
+          : data.clientes
+      );
     } catch (error) {
       console.log(error);
     }
   }
 
   async function handlePesquisarClientes(event) {
-    if (event.key !== 'Enter') return;
-    if (event.key === 'Enter' && event.target.value === "") {
+    if (event.key !== "Enter") return;
+    if (event.key === "Enter" && event.target.value === "") {
       setTotalClientes(clientesList.length);
       setClientesListTemp(clientesList);
-    };
+    }
 
     try {
-      const response = await fetch(`https://api-equipe4of.herokuapp.com/clientes/busca?busca=${inputPesquisaClientes}`, {
-        headers: {
-          method: 'GET',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.API_URL}/clientes/busca?busca=${inputPesquisaClientes}`,
+        {
+          headers: {
+            method: "GET",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       const data = await response.json();
       if (data.length === 0) {
         setNaoEncontrado(true);
@@ -149,9 +159,22 @@ function Clientes() {
 
   return (
     <>
-      <div className={`clientes ${(abrirEditarUsuario || alteracaoUsuarioSucesso) && 'blur-modal'}`}>
-        <Sidebar imagemHome={iconeHomeOff} imagemClientes={iconeClienteOn} imagemCobranca={iconeCobrancaInactive} />
-        <div className={`main-clientes ${(abrirModalCadastroCliente || abrirModalCadastroCobrancas) && 'blur-modal'}`}>
+      <div
+        className={`clientes ${
+          (abrirEditarUsuario || alteracaoUsuarioSucesso) && "blur-modal"
+        }`}
+      >
+        <Sidebar
+          imagemHome={iconeHomeOff}
+          imagemClientes={iconeClienteOn}
+          imagemCobranca={iconeCobrancaInactive}
+        />
+        <div
+          className={`main-clientes ${
+            (abrirModalCadastroCliente || abrirModalCadastroCobrancas) &&
+            "blur-modal"
+          }`}
+        >
           <div className="clientes-title">
             <span className="titulo-pag-clientes">Clientes</span>
             <UserMenu />
@@ -165,15 +188,23 @@ function Clientes() {
             </div>
 
             <div className="clientes-opcoes-actions">
-              <button onClick={() => setAbrirModalCadastroCliente(true)} className="btn-adicionar-cliente">
-                <img
-                  src={iconeAddCliente} alt="Ícone adicionar" />Adicionar cliente
+              <button
+                onClick={() => setAbrirModalCadastroCliente(true)}
+                className="btn-adicionar-cliente"
+              >
+                <img src={iconeAddCliente} alt="Ícone adicionar" />
+                Adicionar cliente
               </button>
               <button className="btn-filtrar-cliente">
                 <img src={iconeFiltro} alt="Ícone filtrar" />
               </button>
-              <input type="text" value={inputPesquisaClientes}
-                onChange={e => setInputPesquisaClientes(e.target.value)} onKeyDown={handlePesquisarClientes} placeholder="Pesquisa" />
+              <input
+                type="text"
+                value={inputPesquisaClientes}
+                onChange={(e) => setInputPesquisaClientes(e.target.value)}
+                onKeyDown={handlePesquisarClientes}
+                placeholder="Pesquisa"
+              />
             </div>
           </div>
           {!naoEncontrado && <ClientesTable offset={offset} />}
@@ -183,12 +214,22 @@ function Clientes() {
       </div>
       {abrirEditarUsuario && <ModalEditarUsuario />}
       {alteracaoUsuarioSucesso && <ModalSucessoAlterarCadastro />}
-      {abrirModalCadastroCliente && <ModalCadastrarCliente getClientes={getClientes} />}
-      {exibirToast && <ToastAlerta mensagemToast={mensagemToast} tipoMensagem={tipoMensagem} />}
-      {abrirModalCadastroCobrancas &&
-        <ModalCadastrarCobranca getDetalharCobrancaCliente={getDetalharCobrancaCliente} />}
+      {abrirModalCadastroCliente && (
+        <ModalCadastrarCliente getClientes={getClientes} />
+      )}
+      {exibirToast && (
+        <ToastAlerta
+          mensagemToast={mensagemToast}
+          tipoMensagem={tipoMensagem}
+        />
+      )}
+      {abrirModalCadastroCobrancas && (
+        <ModalCadastrarCobranca
+          getDetalharCobrancaCliente={getDetalharCobrancaCliente}
+        />
+      )}
     </>
-  )
+  );
 }
 
 export default Clientes;

@@ -6,19 +6,19 @@ import iconeCobrancaOff from "../../assets/icone-cobranca-inactive.svg";
 import iconeClientes from "../../assets/icone-clientes.svg";
 import UserMenu from "../../components/UserMenu";
 import TabelaDadosCobrancasDetalhe from "../../components/TabelaDadosCobrancaDetalhes";
-import TabelaDetalharCliente from '../../components/TabelaDetalharCliente';
-import { NavLink } from 'react-router-dom';
+import TabelaDetalharCliente from "../../components/TabelaDetalharCliente";
+import { NavLink } from "react-router-dom";
 import useGlobal from "../../hooks/useGlobal";
-import ToastAlerta from '../../components/ToastAlerta';
+import ToastAlerta from "../../components/ToastAlerta";
 import ModalEditarCliente from "../../components/ModalEditarCliente";
 import ModalEditarCobranca from "../../components/ModalEditarCobranca";
-import ModalEditarUsuario from '../../components/ModalEditarUsuario';
-import ModalDetalheCobranca from '../../components/ModalDetalheCobranca';
-import ModalCadastrarCobranca from '../../components/ModalCadastrarCobranca';
-import useAuth from '../../hooks/useAuth';
+import ModalEditarUsuario from "../../components/ModalEditarUsuario";
+import ModalDetalheCobranca from "../../components/ModalDetalheCobranca";
+import ModalCadastrarCobranca from "../../components/ModalCadastrarCobranca";
+import useAuth from "../../hooks/useAuth";
 import { useEffect } from "react";
 import ModalSucessoAlterarCadastro from "../../components/ModalSucessoAlterarCadastro";
-import ModalExcluirCobranca from '../../components/ModalExcluirCobranca';
+import ModalExcluirCobranca from "../../components/ModalExcluirCobranca";
 
 function DetalharCliente() {
   const {
@@ -37,7 +37,8 @@ function DetalharCliente() {
     idCliente,
     abrirModalDetalharCobranca,
     abrirModalEdicaoCobranca,
-    abrirModalExcluirCobranca } = useGlobal();
+    abrirModalExcluirCobranca,
+  } = useGlobal();
   const { token } = useAuth();
 
   useEffect(() => {
@@ -46,8 +47,8 @@ function DetalharCliente() {
     }, 3000);
 
     return () => {
-      clearTimeout(timeout)
-    }
+      clearTimeout(timeout);
+    };
   }, [alteracaoUsuarioSucesso]);
 
   useEffect(() => {
@@ -56,8 +57,7 @@ function DetalharCliente() {
       interval = setInterval(() => {
         setExibirToast(true);
       }, 1000);
-    }
-    else {
+    } else {
       clearInterval(interval);
     }
 
@@ -70,8 +70,8 @@ function DetalharCliente() {
     }, 5000);
 
     return () => {
-      clearTimeout(timeout)
-    }
+      clearTimeout(timeout);
+    };
   }, [exibirToast]);
 
   useEffect(() => {
@@ -84,10 +84,13 @@ function DetalharCliente() {
 
   async function getClienteDetalhado() {
     try {
-      const response = await fetch(`https://api-equipe4of.herokuapp.com/clientes/${idCliente}`, {
-        method: 'GET',
-        'Authorization': `Bearer ${token}`
-      });
+      const response = await fetch(
+        `${process.env.API_URL}/clientes/${idCliente}`,
+        {
+          method: "GET",
+          Authorization: `Bearer ${token}`,
+        }
+      );
       const data = await response.json();
       setClienteDetalhado(data);
     } catch (error) {
@@ -97,50 +100,84 @@ function DetalharCliente() {
 
   async function getDetalharCobrancaCliente() {
     try {
-      const response = await fetch(`https://api-equipe4of.herokuapp.com/cobrancas/${idCliente}`, {
-        method: 'GET',
-        'Authorization': `Bearer ${token}`
-      })
+      const response = await fetch(
+        `${process.env.API_URL}/cobrancas/${idCliente}`,
+        {
+          method: "GET",
+          Authorization: `Bearer ${token}`,
+        }
+      );
       const data = await response.json();
       setCobrancasListDetalhar(data);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
   return (
     <>
-      <div className={`detalhar-cliente ${(abrirEditarUsuario || alteracaoUsuarioSucesso) && 'blur-modal'}`}>
+      <div
+        className={`detalhar-cliente ${
+          (abrirEditarUsuario || alteracaoUsuarioSucesso) && "blur-modal"
+        }`}
+      >
         <Sidebar
           imagemHome={iconeHomeOff}
           imagemClientes={iconeClienteOn}
           imagemCobranca={iconeCobrancaOff}
         />
 
-        <div className={`main-detalhamento 
-        ${(abrirModalEditarCliente || abrirModalDetalharCobranca || abrirModalCadastroCobrancas || abrirModalEdicaoCobranca) && 'blur-modal'}`}>
+        <div
+          className={`main-detalhamento 
+        ${
+          (abrirModalEditarCliente ||
+            abrirModalDetalharCobranca ||
+            abrirModalCadastroCobrancas ||
+            abrirModalEdicaoCobranca) &&
+          "blur-modal"
+        }`}
+        >
           <div className="Detalhamento-title">
-            <span className="titulo-detalhe-clientes-link"><NavLink to='/clientes'>Clientes</NavLink><span className="titulo-detalhe"> {">"} Detalhes do cliente</span></span>
+            <span className="titulo-detalhe-clientes-link">
+              <NavLink to="/clientes">Clientes</NavLink>
+              <span className="titulo-detalhe"> {">"} Detalhes do cliente</span>
+            </span>
             <UserMenu />
           </div>
           <hr />
           <div className="detalhes-opcoes-titulo">
             <img src={iconeClientes} alt="" />
-            <h3 >{clienteDetalhado.nome_cliente}</h3>
+            <h3>{clienteDetalhado.nome_cliente}</h3>
           </div>
           <TabelaDetalharCliente />
           <TabelaDadosCobrancasDetalhe />
         </div>
       </div>
-      {abrirModalEditarCliente && <ModalEditarCliente getClienteDetalhado={getClienteDetalhado} />}
+      {abrirModalEditarCliente && (
+        <ModalEditarCliente getClienteDetalhado={getClienteDetalhado} />
+      )}
       {alteracaoUsuarioSucesso && <ModalSucessoAlterarCadastro />}
       {abrirEditarUsuario && <ModalEditarUsuario />}
-      {abrirModalEdicaoCobranca && <ModalEditarCobranca getCobrancas={getDetalharCobrancaCliente} />}
-      {abrirModalCadastroCobrancas &&
-        <ModalCadastrarCobranca getDetalharCobrancaCliente={getDetalharCobrancaCliente} />}
-      {exibirToast && <ToastAlerta mensagemToast={mensagemToast} tipoMensagem={tipoMensagem} />}
-      {abrirModalExcluirCobranca && <ModalExcluirCobranca getCobrancas={getDetalharCobrancaCliente} />}
-      {(!abrirModalEdicaoCobranca && !abrirModalExcluirCobranca && abrirModalDetalharCobranca) && <ModalDetalheCobranca />}
+      {abrirModalEdicaoCobranca && (
+        <ModalEditarCobranca getCobrancas={getDetalharCobrancaCliente} />
+      )}
+      {abrirModalCadastroCobrancas && (
+        <ModalCadastrarCobranca
+          getDetalharCobrancaCliente={getDetalharCobrancaCliente}
+        />
+      )}
+      {exibirToast && (
+        <ToastAlerta
+          mensagemToast={mensagemToast}
+          tipoMensagem={tipoMensagem}
+        />
+      )}
+      {abrirModalExcluirCobranca && (
+        <ModalExcluirCobranca getCobrancas={getDetalharCobrancaCliente} />
+      )}
+      {!abrirModalEdicaoCobranca &&
+        !abrirModalExcluirCobranca &&
+        abrirModalDetalharCobranca && <ModalDetalheCobranca />}
     </>
   );
 }

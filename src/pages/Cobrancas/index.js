@@ -1,26 +1,27 @@
-import { useEffect, useState } from 'react';
-import iconeClienteOff from '../../assets/clientsOff.svg';
-import iconeHomeOff from '../../assets/homeOff.svg';
-import iconeCobrancaActive from '../../assets/icone-cobranca-active.svg';
-import iconeCobrancaMain from '../../assets/icone-cobranca-main.svg';
-import iconeFiltro from '../../assets/icone-filtro.svg';
-import ModalEditarUsuario from '../../components/ModalEditarUsuario';
-import ModalDetalheCobranca from '../../components/ModalDetalheCobranca';
-import ModalSucessoAlterarCadastro from '../../components/ModalSucessoAlterarCadastro';
-import ModalEditarCobranca from '../../components/ModalEditarCobranca';
-import ModalExcluirCobranca from '../../components/ModalExcluirCobranca';
-import Sidebar from '../../components/Sidebar';
-import UserMenu from '../../components/UserMenu';
-import useGlobal from '../../hooks/useGlobal';
-import TabelaCobrancas from '../../components/TabelaCobrancas';
-import ToastAlerta from '../../components/ToastAlerta';
-import useAuth from '../../hooks/useAuth';
-import DivNaoEncontrado from '../../components/DivNaoEncontrado';
-import Paginacao from '../../components/Paginacao';
-import './styles.css';
+import { useEffect, useState } from "react";
+import iconeClienteOff from "../../assets/clientsOff.svg";
+import iconeHomeOff from "../../assets/homeOff.svg";
+import iconeCobrancaActive from "../../assets/icone-cobranca-active.svg";
+import iconeCobrancaMain from "../../assets/icone-cobranca-main.svg";
+import iconeFiltro from "../../assets/icone-filtro.svg";
+import ModalEditarUsuario from "../../components/ModalEditarUsuario";
+import ModalDetalheCobranca from "../../components/ModalDetalheCobranca";
+import ModalSucessoAlterarCadastro from "../../components/ModalSucessoAlterarCadastro";
+import ModalEditarCobranca from "../../components/ModalEditarCobranca";
+import ModalExcluirCobranca from "../../components/ModalExcluirCobranca";
+import Sidebar from "../../components/Sidebar";
+import UserMenu from "../../components/UserMenu";
+import useGlobal from "../../hooks/useGlobal";
+import TabelaCobrancas from "../../components/TabelaCobrancas";
+import ToastAlerta from "../../components/ToastAlerta";
+import useAuth from "../../hooks/useAuth";
+import DivNaoEncontrado from "../../components/DivNaoEncontrado";
+import Paginacao from "../../components/Paginacao";
+import "./styles.css";
 
 function Cobrancas() {
-  const { abrirEditarUsuario,
+  const {
+    abrirEditarUsuario,
     alteracaoUsuarioSucesso,
     setAlteracaoUsuarioSucesso,
     exibirToast,
@@ -35,7 +36,7 @@ function Cobrancas() {
     setCobrancasList,
     clickFiltroCobrancas,
     totalCobrancas,
-    setTotalCobrancas
+    setTotalCobrancas,
   } = useGlobal();
   const [pesquisaCobranca, setPesquisaCobranca] = useState("");
   const { token } = useAuth();
@@ -48,8 +49,8 @@ function Cobrancas() {
     }, 3000);
 
     return () => {
-      clearTimeout(timeout)
-    }
+      clearTimeout(timeout);
+    };
   }, [alteracaoUsuarioSucesso]);
 
   useEffect(() => {
@@ -58,8 +59,7 @@ function Cobrancas() {
       interval = setInterval(() => {
         setExibirToast(true);
       }, 1000);
-    }
-    else {
+    } else {
       clearInterval(interval);
     }
 
@@ -72,8 +72,8 @@ function Cobrancas() {
     }, 5000);
 
     return () => {
-      clearTimeout(timeout)
-    }
+      clearTimeout(timeout);
+    };
   }, [exibirToast]);
 
   useEffect(() => {
@@ -82,25 +82,39 @@ function Cobrancas() {
 
   async function getCobrancas() {
     try {
-      const response = await fetch('https://api-equipe4of.herokuapp.com/cobrancas', {
-        method: 'GET',
-        'Authorization': `Bearer ${token}`
+      const response = await fetch(`${process.env.API_URL}/cobrancas`, {
+        method: "GET",
+        Authorization: `Bearer ${token}`,
       });
 
       const data = await response.json();
       setCobrancasList(data.cobrancas);
-      const vencidas = data.cobrancas.filter(d => d.status.toLowerCase() === 'vencida');
-      const previstas = data.cobrancas.filter(d => d.status.toLowerCase() === 'pendente');
-      const pagas = data.cobrancas.filter(d => d.status.toLowerCase() === 'paga');
-      setTotalCobrancas(clickFiltroCobrancas === 'pagas' ? pagas.length :
-        clickFiltroCobrancas === 'previstas' ? previstas.length :
-          clickFiltroCobrancas === 'vencidas' ? vencidas.length :
-            data.quantidadeCobrancas[0].count);
+      const vencidas = data.cobrancas.filter(
+        (d) => d.status.toLowerCase() === "vencida"
+      );
+      const previstas = data.cobrancas.filter(
+        (d) => d.status.toLowerCase() === "pendente"
+      );
+      const pagas = data.cobrancas.filter(
+        (d) => d.status.toLowerCase() === "paga"
+      );
+      setTotalCobrancas(
+        clickFiltroCobrancas === "pagas"
+          ? pagas.length
+          : clickFiltroCobrancas === "previstas"
+          ? previstas.length
+          : clickFiltroCobrancas === "vencidas"
+          ? vencidas.length
+          : data.quantidadeCobrancas[0].count
+      );
       setCobrancasListTemp(
-        clickFiltroCobrancas === 'pagas' ? pagas :
-          clickFiltroCobrancas === 'previstas' ? previstas :
-            clickFiltroCobrancas === 'vencidas' ? vencidas :
-              data.cobrancas
+        clickFiltroCobrancas === "pagas"
+          ? pagas
+          : clickFiltroCobrancas === "previstas"
+          ? previstas
+          : clickFiltroCobrancas === "vencidas"
+          ? vencidas
+          : data.cobrancas
       );
     } catch (error) {
       console.log(error.message);
@@ -108,22 +122,25 @@ function Cobrancas() {
   }
 
   async function handleRequestApi(event) {
-    if (event.key !== 'Enter') return;
-    if (event.key === 'Enter' && event.target === '') {
+    if (event.key !== "Enter") return;
+    if (event.key === "Enter" && event.target === "") {
       setTotalCobrancas(cobrancasList.length);
       setCobrancasListTemp(cobrancasList);
-    };
+    }
     try {
-      const response = await fetch(`https://api-equipe4of.herokuapp.com/cobrancas/busca?busca=${pesquisaCobranca}`, {
-        method: 'GET',
-        'Authorization': `Bearer ${token}`
-      });
+      const response = await fetch(
+        `${process.env.API_URL}/cobrancas/busca?busca=${pesquisaCobranca}`,
+        {
+          method: "GET",
+          Authorization: `Bearer ${token}`,
+        }
+      );
       const data = await response.json();
       if (!data.length) {
         setNaoEncontrado(true);
         return;
       }
-      setTotalCobrancas(data.length)
+      setTotalCobrancas(data.length);
       setCobrancasListTemp(data);
       setNaoEncontrado(false);
     } catch (error) {
@@ -133,9 +150,21 @@ function Cobrancas() {
 
   return (
     <>
-      <div className={`cobrancas ${(abrirEditarUsuario || alteracaoUsuarioSucesso) && 'blur-modal'}`}>
-        <Sidebar imagemHome={iconeHomeOff} imagemClientes={iconeClienteOff} imagemCobranca={iconeCobrancaActive} />
-        <div className={`main-cobrancas ${abrirModalDetalharCobranca && 'blur-modal'}`}>
+      <div
+        className={`cobrancas ${
+          (abrirEditarUsuario || alteracaoUsuarioSucesso) && "blur-modal"
+        }`}
+      >
+        <Sidebar
+          imagemHome={iconeHomeOff}
+          imagemClientes={iconeClienteOff}
+          imagemCobranca={iconeCobrancaActive}
+        />
+        <div
+          className={`main-cobrancas ${
+            abrirModalDetalharCobranca && "blur-modal"
+          }`}
+        >
           <div className="cobrancas-title">
             <span className="titulo-pag-cobrancas">Cobranças</span>
             <UserMenu />
@@ -156,7 +185,7 @@ function Cobrancas() {
                 type="text"
                 placeholder="Pesquisa"
                 value={pesquisaCobranca}
-                onChange={event => setPesquisaCobranca(event.target.value)}
+                onChange={(event) => setPesquisaCobranca(event.target.value)}
                 onKeyDown={handleRequestApi}
               />
             </div>
@@ -167,13 +196,24 @@ function Cobrancas() {
         </div>
       </div>
       {abrirEditarUsuario && <ModalEditarUsuario />}
-      {abrirModalEdicaoCobranca && <ModalEditarCobranca getCobrancas={getCobrancas} />}
-      {abrirModalExcluirCobranca && <ModalExcluirCobranca getCobrancas={getCobrancas} />}
-      {(!abrirModalEdicaoCobranca && !abrirModalExcluirCobranca && abrirModalDetalharCobranca) && <ModalDetalheCobranca />}
+      {abrirModalEdicaoCobranca && (
+        <ModalEditarCobranca getCobrancas={getCobrancas} />
+      )}
+      {abrirModalExcluirCobranca && (
+        <ModalExcluirCobranca getCobrancas={getCobrancas} />
+      )}
+      {!abrirModalEdicaoCobranca &&
+        !abrirModalExcluirCobranca &&
+        abrirModalDetalharCobranca && <ModalDetalheCobranca />}
       {alteracaoUsuarioSucesso && <ModalSucessoAlterarCadastro />}
-      {exibirToast && <ToastAlerta mensagemToast={mensagemToast} tipoMensagem={tipoMensagem} />}
+      {exibirToast && (
+        <ToastAlerta
+          mensagemToast={mensagemToast}
+          tipoMensagem={tipoMensagem}
+        />
+      )}
     </>
-  )
+  );
 }
 
 export default Cobrancas;
