@@ -26,7 +26,7 @@ export default function useAuthProvider() {
         senha: senha,
       };
 
-      const response = await fetch(`${process.env.API_URL}/login`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
         method: "POST",
         body: JSON.stringify(body),
         headers: {

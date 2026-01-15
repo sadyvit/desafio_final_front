@@ -51,7 +51,7 @@ function Cobrancas() {
     return () => {
       clearTimeout(timeout);
     };
-  }, [alteracaoUsuarioSucesso]);
+  }, [alteracaoUsuarioSucesso, setAlteracaoUsuarioSucesso]);
 
   useEffect(() => {
     let interval;
@@ -64,7 +64,7 @@ function Cobrancas() {
     }
 
     return () => clearInterval(interval);
-  }, [exibirToast]);
+  }, [exibirToast, setExibirToast]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -74,7 +74,7 @@ function Cobrancas() {
     return () => {
       clearTimeout(timeout);
     };
-  }, [exibirToast]);
+  }, [exibirToast, setExibirToast]);
 
   useEffect(() => {
     getCobrancas();
@@ -82,10 +82,13 @@ function Cobrancas() {
 
   async function getCobrancas() {
     try {
-      const response = await fetch(`${process.env.API_URL}/cobrancas`, {
-        method: "GET",
-        Authorization: `Bearer ${token}`,
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/cobrancas`,
+        {
+          method: "GET",
+          Authorization: `Bearer ${token}`,
+        }
+      );
 
       const data = await response.json();
       setCobrancasList(data.cobrancas);
@@ -129,7 +132,7 @@ function Cobrancas() {
     }
     try {
       const response = await fetch(
-        `${process.env.API_URL}/cobrancas/busca?busca=${pesquisaCobranca}`,
+        `${process.env.REACT_APP_API_URL}/cobrancas/busca?busca=${pesquisaCobranca}`,
         {
           method: "GET",
           Authorization: `Bearer ${token}`,

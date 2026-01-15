@@ -16,8 +16,6 @@ function ModalEditarCobranca({ getCobrancas }) {
     nomeClienteModalCobranca,
     cobrancaEdicao,
     setCobrancaEdicao,
-    setCobrancasListTemp,
-    setCobrancasList,
   } = useGlobal();
   const [inputsEditarCobranca, setInputsEditarCobranca] =
     useState(inputCobrancasVazio);
@@ -71,7 +69,7 @@ function ModalEditarCobranca({ getCobrancas }) {
 
   useEffect(() => {
     getCobranca();
-  }, []);
+  }, [getCobranca, salvarEditarCobranca]);
 
   useEffect(() => {
     if (cobrancaEdicao) {
@@ -87,10 +85,11 @@ function ModalEditarCobranca({ getCobrancas }) {
     }
   }, [cobrancaEdicao]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   async function getCobranca() {
     try {
       const response = await fetch(
-        `${process.env.API_URL}/cobranca/${idCobranca}`,
+        `${process.env.REACT_APP_API_URL}/cobranca/${idCobranca}`,
         {
           method: "GET",
           headers: {
@@ -108,7 +107,7 @@ function ModalEditarCobranca({ getCobrancas }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (salvarEditarCobranca === false) return;
+    limparErros();
 
     if (
       inputsEditarCobranca.descricao === "" ||
@@ -123,7 +122,7 @@ function ModalEditarCobranca({ getCobrancas }) {
       cliente_id: cobrancaEdicao.cliente_id,
       descricao: inputsEditarCobranca.descricao,
       vencimento: inputsEditarCobranca.vencimento,
-      valor: inputsEditarCobranca.valor,
+      valor: Number(inputsEditarCobranca.valor),
       status:
         statusCobranca === "vencida" &&
         new Date(inputsEditarCobranca.vencimento) > new Date()
@@ -132,7 +131,7 @@ function ModalEditarCobranca({ getCobrancas }) {
     };
 
     const response = await fetch(
-      `${process.env.API_URL}/cobrancas/${idCobranca}`,
+      `${process.env.REACT_APP_API_URL}/cobrancas/${idCobranca}`,
       {
         method: "PUT",
         headers: {
@@ -180,8 +179,8 @@ function ModalEditarCobranca({ getCobrancas }) {
                 name="nome_cliente"
                 className="form-editar-cobranca-input"
                 value={nomeClienteModalCobranca}
-                onChange={handleChange}
                 placeholder="Digite o nome"
+                readOnly
               />
             </div>
             <div className="edicao-cobranca-input-container">
@@ -225,11 +224,13 @@ function ModalEditarCobranca({ getCobrancas }) {
                   className={`form-editar-cobranca-input ${
                     erroValor && "editar-cobranca-erro"
                   }`}
-                  type="text"
+                  type="number"
                   name="valor"
                   value={inputsEditarCobranca.valor}
                   onChange={handleChange}
                   placeholder="Digite o valor"
+                  min="0"
+                  step="0.01"
                 />
                 {erroValor && (
                   <span className="erro-input-cobranca">{erroValor}</span>
@@ -244,11 +245,9 @@ function ModalEditarCobranca({ getCobrancas }) {
                     name="status"
                     onChange={handleRadioChange}
                     value="paga"
-                    checked={statusCobranca === "paga" ? true : false}
+                    checked={statusCobranca === "paga"}
                   />
-                  <p className="cobranca-label" htmlFor="cobranca-status">
-                    Cobrança paga
-                  </p>
+                  <span className="cobranca-label">Cobrança paga</span>
                 </div>
 
                 <div className="container-cobranca-status">
@@ -257,11 +256,9 @@ function ModalEditarCobranca({ getCobrancas }) {
                     name="status"
                     onChange={handleRadioChange}
                     value="pendente"
-                    checked={statusCobranca === "paga" ? false : true}
+                    checked={statusCobranca === "pendente"}
                   />
-                  <p className="cobranca-label" htmlFor="cobranca-status">
-                    Cobrança pendente
-                  </p>
+                  <span className="cobranca-label">Cobrança pendente</span>
                 </div>
               </div>
             </div>
@@ -270,13 +267,11 @@ function ModalEditarCobranca({ getCobrancas }) {
             <button
               onClick={cancelarEditarCobranca}
               className="cancelar-editar-cobranca"
+              type="button"
             >
               Cancelar
             </button>
-            <button
-              onClick={() => setSalvarEditarCobranca(true)}
-              className="concluir-editar-cobranca"
-            >
+            <button className="concluir-editar-cobranca" type="submit">
               Aplicar
             </button>
           </div>

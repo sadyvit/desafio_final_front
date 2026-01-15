@@ -49,7 +49,7 @@ function DetalharCliente() {
     return () => {
       clearTimeout(timeout);
     };
-  }, [alteracaoUsuarioSucesso]);
+  }, [alteracaoUsuarioSucesso, setAlteracaoUsuarioSucesso]);
 
   useEffect(() => {
     let interval;
@@ -62,7 +62,7 @@ function DetalharCliente() {
     }
 
     return () => clearInterval(interval);
-  }, [exibirToast]);
+  }, [exibirToast, setExibirToast]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -72,7 +72,7 @@ function DetalharCliente() {
     return () => {
       clearTimeout(timeout);
     };
-  }, [exibirToast]);
+  }, [exibirToast, setExibirToast]);
 
   useEffect(() => {
     getClienteDetalhado();
@@ -85,7 +85,7 @@ function DetalharCliente() {
   async function getClienteDetalhado() {
     try {
       const response = await fetch(
-        `${process.env.API_URL}/clientes/${idCliente}`,
+        `${process.env.REACT_APP_API_URL}/clientes/${idCliente}`,
         {
           method: "GET",
           Authorization: `Bearer ${token}`,
@@ -101,7 +101,7 @@ function DetalharCliente() {
   async function getDetalharCobrancaCliente() {
     try {
       const response = await fetch(
-        `${process.env.API_URL}/cobrancas/${idCliente}`,
+        `${process.env.REACT_APP_API_URL}/cobrancas/${idCliente}`,
         {
           method: "GET",
           Authorization: `Bearer ${token}`,

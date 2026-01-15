@@ -77,14 +77,17 @@ function ModalCadastrarCliente({ getClientes }) {
     };
 
     try {
-      const response = await fetch(`${process.env.API_URL}/clientes`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(novoCliente),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/clientes`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(novoCliente),
+        }
+      );
       const data = await response.json();
       if (!response.ok) {
         setExibirToast(true);

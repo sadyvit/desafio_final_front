@@ -11,11 +11,9 @@ function ModalEditarCliente({ getClienteDetalhado }) {
     setExibirToast,
     fecharModalEditarCliente,
     clienteEdicao,
-    setClienteEdicao,
     clienteDetalhado,
     setTipoMensagem,
     setMensagemToast,
-    setClienteDetalhado,
     idCliente,
   } = useGlobal();
   const [inputsClientes, setInputsClientes] = useState(inputClienteVazio);
@@ -31,7 +29,7 @@ function ModalEditarCliente({ getClienteDetalhado }) {
       setInputsClientes(clienteDetalhado);
       return;
     }
-  }, [clienteEdicao]);
+  }, [clienteEdicao, clienteDetalhado]);
 
   function limparErros() {
     setErroNome("");
@@ -90,7 +88,7 @@ function ModalEditarCliente({ getClienteDetalhado }) {
 
     try {
       const response = await fetch(
-        `${process.env.API_URL}/clientes/${clienteDetalhado.id}`,
+        `${process.env.REACT_APP_API_URL}/clientes/${clienteDetalhado.id}`,
         {
           method: "PUT",
           headers: {

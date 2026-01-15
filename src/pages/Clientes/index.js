@@ -55,7 +55,7 @@ function Clientes() {
     }
 
     return () => clearInterval(interval);
-  }, [exibirToast]);
+  }, [exibirToast, setExibirToast]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -65,7 +65,7 @@ function Clientes() {
     return () => {
       clearTimeout(timeout);
     };
-  }, [exibirToast]);
+  }, [exibirToast, setExibirToast]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -75,7 +75,7 @@ function Clientes() {
     return () => {
       clearTimeout(timeout);
     };
-  }, [alteracaoUsuarioSucesso]);
+  }, [alteracaoUsuarioSucesso, setAlteracaoUsuarioSucesso]);
 
   useEffect(() => {
     getClientes();
@@ -84,7 +84,7 @@ function Clientes() {
   async function getDetalharCobrancaCliente(idCliente) {
     try {
       const response = await fetch(
-        `${process.env.API_URL}/cobrancas/${idCliente}`,
+        `${process.env.REACT_APP_API_URL}/cobrancas/${idCliente}`,
         {
           method: "GET",
           Authorization: `Bearer ${token}`,
@@ -99,10 +99,13 @@ function Clientes() {
 
   async function getClientes() {
     try {
-      const response = await fetch(`${process.env.API_URL}/clientes`, {
-        method: "GET",
-        Authorization: `Bearer ${token}`,
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/clientes`,
+        {
+          method: "GET",
+          Authorization: `Bearer ${token}`,
+        }
+      );
 
       const data = await response.json();
       setClientesList(data.clientes);
@@ -136,7 +139,7 @@ function Clientes() {
 
     try {
       const response = await fetch(
-        `${process.env.API_URL}/clientes/busca?busca=${inputPesquisaClientes}`,
+        `${process.env.REACT_APP_API_URL}/clientes/busca?busca=${inputPesquisaClientes}`,
         {
           headers: {
             method: "GET",

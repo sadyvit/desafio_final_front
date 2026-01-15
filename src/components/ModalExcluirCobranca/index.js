@@ -3,17 +3,12 @@ import iconeModalExcluir from "../../assets/icone-modal-excluir.svg";
 import iconeFecharModalExcluir from "../../assets/icone-fechar.svg";
 import useGlobal from "../../hooks/useGlobal";
 import useAuth from "../../hooks/useAuth";
-import { useEffect } from "react";
 
 function ModalExcluirCobranca({ getCobrancas }) {
   const {
-    setCobrancasListTemp,
-    setCobrancasList,
     fecharModalExcluirCobranca,
     idCobranca,
     cobrancaAExcluir,
-    setCobrancaAExcluir,
-    exibirToast,
     setExibirToast,
     setTipoMensagem,
     setMensagemToast,
@@ -28,7 +23,7 @@ function ModalExcluirCobranca({ getCobrancas }) {
       setMensagemToast("Esta cobrança não pode ser excluída!");
       return;
     }
-    await fetch(`${process.env.API_URL}/cobrancas/${idCobranca}`, {
+    await fetch(`${process.env.REACT_APP_API_URL}/cobrancas/${idCobranca}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

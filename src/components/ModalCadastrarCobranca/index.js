@@ -74,10 +74,13 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
 
   async function getClientes() {
     try {
-      const response = await fetch(`${process.env.API_URL}/clientes`, {
-        method: "GET",
-        Authorization: `Bearer ${token}`,
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/clientes`,
+        {
+          method: "GET",
+          Authorization: `Bearer ${token}`,
+        }
+      );
 
       const data = await response.json();
       setClientesList(data.clientes);
@@ -118,7 +121,7 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
     };
 
     const response = await fetch(
-      `${process.env.API_URL}/cobrancas/${idCliente}`,
+      `${process.env.REACT_APP_API_URL}/cobrancas/${idCliente}`,
       {
         method: "POST",
         headers: {

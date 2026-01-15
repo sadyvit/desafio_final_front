@@ -5,21 +5,16 @@ import useAuth from "../../hooks/useAuth";
 import { useState, useEffect } from "react";
 import ToastAlerta from "../../components/ToastAlerta";
 
-
-
-
 function Login() {
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [erroEmail, setErroEmail] = useState('');
-  const [erroSenha, setErroSenha] = useState('');
-
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erroEmail, setErroEmail] = useState("");
+  const [erroSenha, setErroSenha] = useState("");
 
   const auth = useAuth();
   const navigate = useNavigate();
 
   function goTo(path) {
-
     navigate(path);
   }
 
@@ -30,44 +25,38 @@ function Login() {
         auth.setExibirToastLogin(true);
       }, 1000);
     }
-    else {
-      clearInterval(interval);
-    }
-
-    return () => clearInterval(interval);
-  }, [auth.exibirToastLogin]);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [auth]);
 
   useEffect(() => {
+    if (!auth.exibirToastLogin) return;
     const timeout = setTimeout(() => {
       auth.setExibirToastLogin(false);
     }, 5000);
-
-    return () => {
-      clearTimeout(timeout)
-    }
-  }, [auth.exibirToastLogin]);
+    return () => clearTimeout(timeout);
+  }, [auth]);
 
   function handleClick() {
     if (!email) {
-      setErroEmail('Este campo deve ser preenchido')
+      setErroEmail("Este campo deve ser preenchido");
       return;
-    };
+    }
     if (!senha) {
-      setErroSenha('Este campo deve ser preenchido')
+      setErroSenha("Este campo deve ser preenchido");
       return;
-    };
-
-
-    auth.signIn(email, senha, () => goTo('/home'))
+    }
+    auth.signIn(email, senha, () => goTo("/home"));
   }
 
   function handleChangeEmail(e) {
-    setEmail(e.target.value)
-    setErroEmail('')
+    setEmail(e.target.value || "");
+    setErroEmail("");
   }
   function handleChangeSenha(e) {
-    setSenha(e.target.value)
-    setErroSenha('')
+    setSenha(e.target.value || "");
+    setErroSenha("");
   }
 
   return (
@@ -104,21 +93,23 @@ function Login() {
               />
               {erroSenha && <label className="erro">{erroSenha}</label>}
             </div>
-            <button
-              className="btn"
-              onClick={handleClick}
-            >
+            <button className="btn" onClick={handleClick}>
               Entrar
             </button>
             <label>
-              Ainda não possui uma conta? <Link to="/cadastro">Cadastre-se</Link>
+              Ainda não possui uma conta?{" "}
+              <Link to="/cadastro">Cadastre-se</Link>
             </label>
           </div>
         </div>
       </div>
-      {auth.exibirToastLogin && <ToastAlerta mensagemToast={auth.mensagemToastLogin} tipoMensagem={'erro'} />}
+      {auth.exibirToastLogin && (
+        <ToastAlerta
+          mensagemToast={auth.mensagemToastLogin}
+          tipoMensagem={"erro"}
+        />
+      )}
     </>
-
   );
 }
 

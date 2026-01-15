@@ -75,7 +75,7 @@ function Home() {
     return () => {
       clearTimeout(timeout);
     };
-  }, [alteracaoUsuarioSucesso]);
+  }, [alteracaoUsuarioSucesso, setAlteracaoUsuarioSucesso]);
 
   useEffect(() => {
     let interval;
@@ -88,7 +88,7 @@ function Home() {
     }
 
     return () => clearInterval(interval);
-  }, [exibirToast]);
+  }, [exibirToast, setExibirToast]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -98,7 +98,7 @@ function Home() {
     return () => {
       clearTimeout(timeout);
     };
-  }, [exibirToast]);
+  }, [exibirToast, setExibirToast]);
 
   useEffect(() => {
     getClientes();
@@ -110,10 +110,13 @@ function Home() {
 
   async function getClientes() {
     try {
-      const response = await fetch("process.env.API_URL/clientes", {
-        method: "GET",
-        Authorization: `Bearer ${token}`,
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/clientes`,
+        {
+          method: "GET",
+          Authorization: `Bearer ${token}`,
+        }
+      );
 
       const data = await response.json();
       setClientesList(data.clientes);
@@ -128,10 +131,13 @@ function Home() {
 
   async function getCobrancas() {
     try {
-      const response = await fetch(`${process.env.API_URL}/cobrancas`, {
-        method: "GET",
-        Authorization: `Bearer ${token}`,
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_URL}/cobrancas`,
+        {
+          method: "GET",
+          Authorization: `Bearer ${token}`,
+        }
+      );
       const data = await response.json();
       setCobrancasListTemp(data.cobrancas);
       setTotalCobrancas(data.quantidadeCobrancas[0].count);

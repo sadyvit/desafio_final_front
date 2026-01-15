@@ -14,14 +14,8 @@ function Senha({ nome, email, setEtapaSenha, setNome, setEmail }) {
   const [erroRepitaSenha, setErroRepitaSenha] = useState("");
   const [ocultarSenha, setOcultarSenha] = useState(false);
   const [ocultarRepitaSenha, setOcultarRepitaSenha] = useState(false);
-  const {
-    exibirToast,
-    setExibirToast,
-    tipoMensagem,
-    setTipoMensagem,
-    mensagemToast,
-    setMensagemToast,
-  } = useGlobal();
+  const { exibirToast, setExibirToast, setTipoMensagem, setMensagemToast } =
+    useGlobal();
 
   async function handleRegistroUsuario() {
     const body = {
@@ -30,7 +24,7 @@ function Senha({ nome, email, setEtapaSenha, setNome, setEmail }) {
       senha: senha,
     };
     try {
-      const response = await fetch(`${process.env.API_URL}/usuario`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/usuario`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,7 +51,7 @@ function Senha({ nome, email, setEtapaSenha, setNome, setEmail }) {
       setErroSenha("A senha deve conter no minimo 5 caracteres");
       return;
     }
-    if (senhaConfirmar != senha) {
+    if (senhaConfirmar !== senha) {
       setErroRepitaSenha("As senhas não coincidem");
       return;
     }

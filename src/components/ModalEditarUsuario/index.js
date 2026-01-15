@@ -63,7 +63,7 @@ function ModalEditarUsuario() {
 
   async function getUsuario() {
     try {
-      const response = await fetch(`${process.env.API_URL}/usuario`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/usuario`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -114,7 +114,7 @@ function ModalEditarUsuario() {
       telefone: inputsEditarUsuario.telefone,
     };
 
-    const response = await fetch(`${process.env.API_URL}/usuario`, {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/usuario`, {
       method: "PUT",
       headers: {
         "Content-type": "Application/json",
