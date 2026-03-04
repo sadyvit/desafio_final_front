@@ -34,6 +34,8 @@ function Clientes() {
     abrirModalCadastroCobrancas,
     mensagemToast,
     tipoMensagem,
+    setMensagemToast,
+    setTipoMensagem,
     setCobrancasListDetalhar,
     clickFiltroClientes,
     totalClientes,
@@ -87,11 +89,16 @@ function Clientes() {
         `${process.env.REACT_APP_API_URL}/cobrancas/${idCliente}`,
         {
           method: "GET",
-          Authorization: `Bearer ${token}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
+      if (!response.ok) {
+        return;
+      }
       const data = await response.json();
-      setCobrancasListDetalhar(data);
+      setCobrancasListDetalhar(Array.isArray(data) ? data : []);
     } catch (error) {
       console.log(error);
     }
@@ -100,33 +107,54 @@ function Clientes() {
   async function getClientes() {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/clientes`,
+        `${process.env.REACT_APP_API_URL}/clientes?limit=1000&offset=0`,
         {
           method: "GET",
-          Authorization: `Bearer ${token}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
+      if (!response.ok) {
+        setExibirToast(true);
+        setTipoMensagem("erro");
+        setMensagemToast(
+          response.status === 401
+            ? "Sessão expirada. Faça login novamente."
+            : "Não foi possível carregar clientes."
+        );
+        return;
+      }
+
       const data = await response.json();
-      setClientesList(data.clientes);
-      const emDia = data.clientes.filter((d) => d.status === true);
-      const inadimplentes = data.clientes.filter((d) => d.status === false);
+
+      const clientes = Array.isArray(data?.clientes) ? data.clientes : [];
+      const quantidade = Number(data?.quantidadeClientes?.[0]?.count ?? 0);
+
+      setClientesList(clientes);
+      const emDia = clientes.filter((d) => d.status === true);
+      const inadimplentes = clientes.filter((d) => d.status === false);
       setTotalClientes(
         clickFiltroClientes === "emDia"
           ? emDia.length
           : clickFiltroClientes === "inadimplentes"
           ? inadimplentes.length
-          : data.quantidadeClientes[0].count
+          : quantidade
       );
       setClientesListTemp(
         clickFiltroClientes === "emDia"
           ? emDia
           : clickFiltroClientes === "inadimplentes"
           ? inadimplentes
-          : data.clientes
+          : clientes
       );
+      setNaoEncontrado(clientes.length === 0);
     } catch (error) {
       console.log(error);
+      setExibirToast(true);
+      setTipoMensagem("erro");
+      setMensagemToast("Erro de conexão ao carregar clientes.");
     }
   }
 
@@ -135,20 +163,35 @@ function Clientes() {
     if (event.key === "Enter" && event.target.value === "") {
       setTotalClientes(clientesList.length);
       setClientesListTemp(clientesList);
+      setNaoEncontrado(clientesList.length === 0);
+      return;
     }
 
     try {
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/clientes/busca?busca=${inputPesquisaClientes}`,
         {
+          method: "GET",
           headers: {
-            method: "GET",
             Authorization: `Bearer ${token}`,
           },
         }
       );
+
+      if (!response.ok) {
+        setExibirToast(true);
+        setTipoMensagem("erro");
+        setMensagemToast(
+          response.status === 401
+            ? "Sessão expirada. Faça login novamente."
+            : "Não foi possível pesquisar clientes."
+        );
+        return;
+      }
+
       const data = await response.json();
-      if (data.length === 0) {
+
+      if (!Array.isArray(data) || data.length === 0) {
         setNaoEncontrado(true);
         return;
       }
@@ -157,6 +200,9 @@ function Clientes() {
       setNaoEncontrado(false);
     } catch (error) {
       console.log(error);
+      setExibirToast(true);
+      setTipoMensagem("erro");
+      setMensagemToast("Erro de conexão ao pesquisar clientes.");
     }
   }
 
@@ -212,7 +258,9 @@ function Clientes() {
           </div>
           {!naoEncontrado && <ClientesTable offset={offset} />}
           {naoEncontrado && <DivNaoEncontrado />}
-          <Paginacao setOffset={setOffset} totalArray={totalClientes} />
+          {!naoEncontrado && totalClientes > 0 && (
+            <Paginacao setOffset={setOffset} totalArray={totalClientes} />
+          )}
         </div>
       </div>
       {abrirEditarUsuario && <ModalEditarUsuario />}

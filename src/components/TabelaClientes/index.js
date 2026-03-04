@@ -16,13 +16,14 @@ function ClientesTable({ offset }) {
     clientesListTemp,
     setClientesListTemp } = useGlobal();
   const [ordemClienteNome, setOrdemClienteNome] = useState('');
+  const listaClientes = Array.isArray(clientesListTemp) ? clientesListTemp : [];
 
   return (
     <div className='tabela-container'>
       <div className='tabela'>
 
         <div className='titulo-coluna cliente linha-click'
-          onClick={() => ordenarTabelaNomeCliente(ordemClienteNome, setOrdemClienteNome, clientesListTemp, setClientesListTemp)}>
+          onClick={() => ordenarTabelaNomeCliente(ordemClienteNome, setOrdemClienteNome, listaClientes, setClientesListTemp)}>
           <img className='arrow-icon' src={arrowIcon} alt='arrow icon' />
           <span>Cliente</span>
         </div>
@@ -44,9 +45,9 @@ function ClientesTable({ offset }) {
       </div>
 
       <div className="table-body">
-        {clientesListTemp.map((cliente) => (
-          (clientesListTemp.indexOf(cliente) >= offset &&
-            clientesListTemp.indexOf(cliente) < offset + 10) &&
+        {listaClientes.map((cliente) => (
+          (listaClientes.indexOf(cliente) >= offset &&
+            listaClientes.indexOf(cliente) < offset + 10) &&
           <div className="linha-table" key={cliente.id}>
             <div
               className='line-items'

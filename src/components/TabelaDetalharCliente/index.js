@@ -78,7 +78,7 @@ function TabelaDetalharCliente() {
             <div className="dado-uf">
               <span className="titulo-coluna-perfil-span">UF</span>
               <span className="descicao-coluna-perfil-span">
-                {clienteDetalhado.estado.toUpperCase()}
+                {(clienteDetalhado.estado || "").toUpperCase()}
               </span>
             </div>
           </div>

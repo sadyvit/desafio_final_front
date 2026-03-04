@@ -75,10 +75,12 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
   async function getClientes() {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/clientes`,
+        `${process.env.REACT_APP_API_URL}/clientes?limit=1000&offset=0`,
         {
           method: "GET",
-          Authorization: `Bearer ${token}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -120,23 +122,40 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
       status: statusCobranca,
     };
 
-    const response = await fetch(
+    const endpoints = [
       `${process.env.REACT_APP_API_URL}/cobrancas/${idCliente}`,
-      {
+      `${process.env.REACT_APP_API_URL}/cobranca/${idCliente}`,
+    ];
+
+    let response;
+    for (const endpoint of endpoints) {
+      response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-type": "Application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
-      }
-    );
+      });
 
-    const data = await response.json();
+      if (response.status !== 404) {
+        break;
+      }
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    const data = contentType.includes("application/json")
+      ? await response.json()
+      : await response.text();
+
     if (!response.ok) {
       setExibirToast(true);
       setTipoMensagem("erro");
-      setMensagemToast(data);
+      setMensagemToast(
+        typeof data === "string" && data.trim() !== ""
+          ? data
+          : "Não foi possível cadastrar a cobrança"
+      );
       return;
     }
     await getDetalharCobrancaCliente(idCliente);

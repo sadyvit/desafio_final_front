@@ -88,11 +88,19 @@ function DetalharCliente() {
         `${process.env.REACT_APP_API_URL}/clientes/${idCliente}`,
         {
           method: "GET",
-          Authorization: `Bearer ${token}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
+
+      if (!response.ok) {
+        setClienteDetalhado({});
+        return;
+      }
+
       const data = await response.json();
-      setClienteDetalhado(data);
+      setClienteDetalhado(data && typeof data === "object" ? data : {});
     } catch (error) {
       console.log(error);
     }
@@ -104,11 +112,19 @@ function DetalharCliente() {
         `${process.env.REACT_APP_API_URL}/cobrancas/${idCliente}`,
         {
           method: "GET",
-          Authorization: `Bearer ${token}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
+
+      if (!response.ok) {
+        setCobrancasListDetalhar([]);
+        return;
+      }
+
       const data = await response.json();
-      setCobrancasListDetalhar(data);
+      setCobrancasListDetalhar(Array.isArray(data) ? data : []);
     } catch (error) {
       console.log(error);
     }

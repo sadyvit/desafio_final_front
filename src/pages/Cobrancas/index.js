@@ -28,6 +28,8 @@ function Cobrancas() {
     setExibirToast,
     mensagemToast,
     tipoMensagem,
+    setMensagemToast,
+    setTipoMensagem,
     abrirModalEdicaoCobranca,
     abrirModalDetalharCobranca,
     abrirModalExcluirCobranca,
@@ -83,22 +85,39 @@ function Cobrancas() {
   async function getCobrancas() {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/cobrancas`,
+        `${process.env.REACT_APP_API_URL}/cobrancas?limit=1000&offset=0`,
         {
           method: "GET",
-          Authorization: `Bearer ${token}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
+      if (!response.ok) {
+        setExibirToast(true);
+        setTipoMensagem("erro");
+        setMensagemToast(
+          response.status === 401
+            ? "Sessão expirada. Faça login novamente."
+            : "Não foi possível carregar cobranças."
+        );
+        return;
+      }
+
       const data = await response.json();
-      setCobrancasList(data.cobrancas);
-      const vencidas = data.cobrancas.filter(
+
+      const cobrancas = Array.isArray(data?.cobrancas) ? data.cobrancas : [];
+      const quantidade = Number(data?.quantidadeCobrancas?.[0]?.count ?? 0);
+
+      setCobrancasList(cobrancas);
+      const vencidas = cobrancas.filter(
         (d) => d.status.toLowerCase() === "vencida"
       );
-      const previstas = data.cobrancas.filter(
+      const previstas = cobrancas.filter(
         (d) => d.status.toLowerCase() === "pendente"
       );
-      const pagas = data.cobrancas.filter(
+      const pagas = cobrancas.filter(
         (d) => d.status.toLowerCase() === "paga"
       );
       setTotalCobrancas(
@@ -108,7 +127,7 @@ function Cobrancas() {
           ? previstas.length
           : clickFiltroCobrancas === "vencidas"
           ? vencidas.length
-          : data.quantidadeCobrancas[0].count
+          : quantidade
       );
       setCobrancasListTemp(
         clickFiltroCobrancas === "pagas"
@@ -117,29 +136,50 @@ function Cobrancas() {
           ? previstas
           : clickFiltroCobrancas === "vencidas"
           ? vencidas
-          : data.cobrancas
+          : cobrancas
       );
+      setNaoEncontrado(cobrancas.length === 0);
     } catch (error) {
       console.log(error.message);
+      setExibirToast(true);
+      setTipoMensagem("erro");
+      setMensagemToast("Erro de conexão ao carregar cobranças.");
     }
   }
 
   async function handleRequestApi(event) {
     if (event.key !== "Enter") return;
-    if (event.key === "Enter" && event.target === "") {
+    if (event.key === "Enter" && event.target.value === "") {
       setTotalCobrancas(cobrancasList.length);
       setCobrancasListTemp(cobrancasList);
+      setNaoEncontrado(cobrancasList.length === 0);
+      return;
     }
     try {
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/cobrancas/busca?busca=${pesquisaCobranca}`,
         {
           method: "GET",
-          Authorization: `Bearer ${token}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
+
+      if (!response.ok) {
+        setExibirToast(true);
+        setTipoMensagem("erro");
+        setMensagemToast(
+          response.status === 401
+            ? "Sessão expirada. Faça login novamente."
+            : "Não foi possível pesquisar cobranças."
+        );
+        return;
+      }
+
       const data = await response.json();
-      if (!data.length) {
+
+      if (!Array.isArray(data) || !data.length) {
         setNaoEncontrado(true);
         return;
       }
@@ -148,6 +188,9 @@ function Cobrancas() {
       setNaoEncontrado(false);
     } catch (error) {
       console.log(error);
+      setExibirToast(true);
+      setTipoMensagem("erro");
+      setMensagemToast("Erro de conexão ao pesquisar cobranças.");
     }
   }
 
@@ -195,7 +238,9 @@ function Cobrancas() {
           </div>
           {!naoEncontrado && <TabelaCobrancas offset={offset} />}
           {naoEncontrado && <DivNaoEncontrado />}
-          <Paginacao setOffset={setOffset} totalArray={totalCobrancas} />
+          {!naoEncontrado && totalCobrancas > 0 && (
+            <Paginacao setOffset={setOffset} totalArray={totalCobrancas} />
+          )}
         </div>
       </div>
       {abrirEditarUsuario && <ModalEditarUsuario />}

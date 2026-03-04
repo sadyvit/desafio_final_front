@@ -1,6 +1,7 @@
 .nao-encontrado {
     display: flex;
     justify-content: center;
+    align-items: center;
     background-color: white;
     border-radius: 30px;
     margin-left: 7.5%;
@@ -8,10 +9,12 @@
     margin-right: 8.5%;
     margin-bottom: 20px;
     min-width: 50%;
-    padding-left: 2%;
-    padding-right: 3%;
-    padding-bottom: 40px;
+    min-height: 430px;
+    padding: 24px;
 }
 .nao-encontrado img {
-    margin-top: 40px;
+    width: 100%;
+    max-width: 640px;
+    height: auto;
+    margin-top: 0;
 }

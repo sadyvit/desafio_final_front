@@ -111,19 +111,33 @@ function Home() {
   async function getClientes() {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/clientes`,
+        `${process.env.REACT_APP_API_URL}/clientes?limit=1000&offset=0`,
         {
           method: "GET",
-          Authorization: `Bearer ${token}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
+      if (!response.ok) {
+        setClientesList([]);
+        setClientesListTemp([]);
+        setClientesInadimplentes([]);
+        setClientesEmDia([]);
+        setTotalClientes(0);
+        return;
+      }
+
       const data = await response.json();
-      setClientesList(data.clientes);
-      setClientesListTemp(data.clientes);
-      setTotalClientes(data.quantidadeClientes[0].count);
-      setClientesInadimplentes(data.clientes.filter((d) => d.status === false));
-      setClientesEmDia(data.clientes.filter((d) => d.status === true));
+      const clientes = Array.isArray(data?.clientes) ? data.clientes : [];
+      const quantidade = Number(data?.quantidadeClientes?.[0]?.count ?? 0);
+
+      setClientesList(clientes);
+      setClientesListTemp(clientes);
+      setTotalClientes(quantidade);
+      setClientesInadimplentes(clientes.filter((d) => d.status === false));
+      setClientesEmDia(clientes.filter((d) => d.status === true));
     } catch (error) {
       console.log(error);
     }
@@ -132,24 +146,40 @@ function Home() {
   async function getCobrancas() {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/cobrancas`,
+        `${process.env.REACT_APP_API_URL}/cobrancas?limit=1000&offset=0`,
         {
           method: "GET",
-          Authorization: `Bearer ${token}`,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
+
+      if (!response.ok) {
+        setCobrancasListTemp([]);
+        setCobrancasList([]);
+        setCobrancasVencidas([]);
+        setCobrancasPrevistas([]);
+        setCobrancasPagas([]);
+        setTotalCobrancas(0);
+        return;
+      }
+
       const data = await response.json();
-      setCobrancasListTemp(data.cobrancas);
-      setTotalCobrancas(data.quantidadeCobrancas[0].count);
-      setCobrancasList(data.cobrancas);
+      const cobrancas = Array.isArray(data?.cobrancas) ? data.cobrancas : [];
+      const quantidade = Number(data?.quantidadeCobrancas?.[0]?.count ?? 0);
+
+      setCobrancasListTemp(cobrancas);
+      setTotalCobrancas(quantidade);
+      setCobrancasList(cobrancas);
       setCobrancasVencidas(
-        data.cobrancas.filter((d) => d.status.toLowerCase() === "vencida")
+        cobrancas.filter((d) => d.status.toLowerCase() === "vencida")
       );
       setCobrancasPrevistas(
-        data.cobrancas.filter((d) => d.status.toLowerCase() === "pendente")
+        cobrancas.filter((d) => d.status.toLowerCase() === "pendente")
       );
       setCobrancasPagas(
-        data.cobrancas.filter((d) => d.status.toLowerCase() === "paga")
+        cobrancas.filter((d) => d.status.toLowerCase() === "paga")
       );
     } catch (error) {
       console.log(error);

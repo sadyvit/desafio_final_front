@@ -31,3 +31,32 @@ Estes Pull Requests (PRs) deverão ser criados a partir da branch principal do f
 Ou seja, o Pull Request de **FRONTEND** deverá ser criado a partir do fork de vocês desse repositório aqui, com destino a este repositório aqui.
 
 E portanto o Pull Request de **BACKEND** deverá ser criado a partir do fork de vocês do repositório base de BACKEND desse desafio, com destino ao [repositório base de BACKEND desse desafio](https://github.com/cubos-academy/back-integral-m05-desafio-t04).
+
+---
+
+## Configuração para consumir API da Vercel
+
+Este frontend usa a variável de ambiente `REACT_APP_API_URL` em todas as chamadas `fetch`.
+
+1. Crie um arquivo `.env.local` na raiz do projeto (pode copiar de `.env.example`).
+2. Defina a URL do backend deployado na Vercel:
+
+```bash
+REACT_APP_API_URL=https://seu-backend.vercel.app
+```
+
+> Use a URL sem barra no final.
+
+3. Reinicie o frontend (`npm start`) para a variável ser recarregada.
+
+### Deploy do frontend na Vercel
+
+Se publicar este frontend na Vercel, as rotas do React Router precisam de rewrite para `index.html`.
+Este repositório já inclui `vercel.json` com essa configuração.
+
+### Checklist de compatibilidade (março/2026)
+
+- Build de produção está funcionando (`npm run build`) — sem erros, apenas warnings de lint.
+- A configuração obrigatória para funcionar com novo backend é apenas `REACT_APP_API_URL`.
+- Garanta também que o backend permita CORS do domínio do frontend (local e produção).
+- Atualização de dependências pode ser feita depois; não há bloqueio crítico de execução no estado atual.

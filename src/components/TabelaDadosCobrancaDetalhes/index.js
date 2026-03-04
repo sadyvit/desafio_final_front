@@ -18,6 +18,7 @@ function TabelaCobrancasDetalhe() {
     handleClickModalExcluir } = useGlobal();
   const [ordemIdCobranca, setOrdemIdCobranca] = useState('');
   const [ordemDataCobranca, setOrdemDataCobranca] = useState('');
+  const listaCobrancasDetalhe = Array.isArray(cobrancasListDetalhar) ? cobrancasListDetalhar : [];
 
   return (
     <div className="tabela-cobranças-cliente">
@@ -29,13 +30,13 @@ function TabelaCobrancasDetalhe() {
       </div>
       <div className="titulo-coluna-cobrancas-detalhe">
         <span className="titulo-coluna-cobrancas-detalhe-span icone-ordem"
-          onClick={() => ordenarTabelaIdCobranca(setOrdemIdCobranca, ordemIdCobranca, cobrancasListDetalhar, setCobrancasListDetalhar)}>
+          onClick={() => ordenarTabelaIdCobranca(setOrdemIdCobranca, ordemIdCobranca, listaCobrancasDetalhe, setCobrancasListDetalhar)}>
           <img src={arrowIcon} alt="" />
           ID Cob.
         </span>
         <span className="titulo-coluna-cobrancas-detalhe-span">Valor</span>
         <span className="titulo-coluna-cobrancas-detalhe-span icone-ordem"
-          onClick={() => ordenarTabelaDataCobranca(setOrdemDataCobranca, ordemDataCobranca, cobrancasListDetalhar, setCobrancasListDetalhar)}>
+          onClick={() => ordenarTabelaDataCobranca(setOrdemDataCobranca, ordemDataCobranca, listaCobrancasDetalhe, setCobrancasListDetalhar)}>
           <img src={arrowIcon} alt="" />
           Data de venc.
         </span>
@@ -43,7 +44,7 @@ function TabelaCobrancasDetalhe() {
         <span className="titulo-coluna-cobrancas-detalhe-span">Descrição</span>
       </div>
       <div className="conteudo-cobrancas-detalhe">
-        {cobrancasListDetalhar.map((cobrancasDetalhe) => (
+        {listaCobrancasDetalhe.map((cobrancasDetalhe) => (
           <div className="linha-info-cobranca-detalhe linha-click" key={cobrancasDetalhe.id} onClick={() => abrirModalDetalheCobrancaPageCliente(cobrancasDetalhe)}>
             <span className="linha-info-cobranca-detalhe">{cobrancasDetalhe.id}</span>
             <span className="linha-info-cobranca-detalhe">{Number(cobrancasDetalhe.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
