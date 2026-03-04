@@ -76,10 +76,12 @@ function DetalharCliente() {
 
   useEffect(() => {
     getClienteDetalhado();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     getDetalharCobrancaCliente();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function getClienteDetalhado() {

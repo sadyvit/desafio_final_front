@@ -102,10 +102,12 @@ function Home() {
 
   useEffect(() => {
     getClientes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     getCobrancas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function getClientes() {
