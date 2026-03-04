@@ -32,6 +32,7 @@ function ModalEditarUsuario() {
 
   useEffect(() => {
     getUsuario();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

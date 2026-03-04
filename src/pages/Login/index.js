@@ -81,7 +81,7 @@ function Login() {
             </div>
             <div className="space-between">
               <label>Senha</label>
-              <a href="#">Esqueceu a senha?</a>
+              <a href="/recuperar-senha">Esqueceu a senha?</a>
             </div>
             <div className="container-email">
               <input
