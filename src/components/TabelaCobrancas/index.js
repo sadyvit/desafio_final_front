@@ -20,6 +20,7 @@ function TabelaCobrancas({ offset }) {
   } = useGlobal();
   const [ordemCobrancaNome, setOrdemCobrancaNome] = useState("");
   const [ordemIdCobranca, setOrdemIdCobranca] = useState("");
+  const listaCobrancas = Array.isArray(cobrancasListTemp) ? cobrancasListTemp : [];
 
   return (
     <div className="tabela-cobrancas">
@@ -30,7 +31,7 @@ function TabelaCobrancas({ offset }) {
             ordenarTabelaNomeCliente(
               ordemCobrancaNome,
               setOrdemCobrancaNome,
-              cobrancasListTemp,
+              listaCobrancas,
               setCobrancasListTemp
             )
           }
@@ -44,7 +45,7 @@ function TabelaCobrancas({ offset }) {
             ordenarTabelaIdCobranca(
               setOrdemIdCobranca,
               ordemIdCobranca,
-              cobrancasListTemp,
+              listaCobrancas,
               setCobrancasListTemp
             )
           }
@@ -58,10 +59,10 @@ function TabelaCobrancas({ offset }) {
         <span className="titulo-coluna-cobrancas-span">Descrição</span>
       </div>
       <div className="conteudo-cobrancas">
-        {cobrancasListTemp.map(
+        {listaCobrancas.map(
           (cobranca) =>
-            cobrancasListTemp.indexOf(cobranca) >= offset &&
-            cobrancasListTemp.indexOf(cobranca) < offset + 10 && (
+            listaCobrancas.indexOf(cobranca) >= offset &&
+            listaCobrancas.indexOf(cobranca) < offset + 10 && (
               <div
                 className="linha-info-cobranca linha-click"
                 key={cobranca.id}
