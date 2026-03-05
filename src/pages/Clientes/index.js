@@ -17,6 +17,7 @@ import useAuth from "../../hooks/useAuth";
 import useGlobal from "../../hooks/useGlobal";
 import DivNaoEncontrado from "../../components/DivNaoEncontrado";
 import Paginacao from "../../components/Paginacao";
+import { clienteEhInadimplente } from "../../utils/utils";
 import "./styles.css";
 
 function Clientes() {
@@ -121,8 +122,8 @@ function Clientes() {
       const quantidade = Number(data?.quantidadeClientes?.[0]?.count ?? 0);
 
       setClientesList(clientes);
-      const emDia = clientes.filter((d) => d.status === true);
-      const inadimplentes = clientes.filter((d) => d.status === false);
+      const inadimplentes = clientes.filter((d) => clienteEhInadimplente(d.status));
+      const emDia = clientes.filter((d) => !clienteEhInadimplente(d.status));
       setTotalClientes(
         clickFiltroClientes === "emDia"
           ? emDia.length

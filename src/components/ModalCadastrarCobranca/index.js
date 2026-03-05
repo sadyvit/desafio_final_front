@@ -4,6 +4,7 @@ import iconeCobranca from "../../assets/icone-cobranca-main.svg";
 import useAuth from "../../hooks/useAuth";
 import useGlobal from "../../hooks/useGlobal";
 import { useState } from "react";
+import { clienteEhInadimplente } from "../../utils/utils";
 
 function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
   const {
@@ -94,13 +95,13 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
       setClientesList(data.clientes);
       setClientesListTemp(
         clickFiltroClientes === "emDia"
-          ? data.clientes.filter((d) => d.status === true)
+          ? data.clientes.filter((d) => !clienteEhInadimplente(d.status))
           : clickFiltroClientes === "inadimplentes"
-          ? data.clientes.filter((d) => d.status === false)
+          ? data.clientes.filter((d) => clienteEhInadimplente(d.status))
           : data.clientes
       );
-      setClientesInadimplentes(data.clientes.filter((d) => d.status === false));
-      setClientesEmDia(data.clientes.filter((d) => d.status === true));
+      setClientesInadimplentes(data.clientes.filter((d) => clienteEhInadimplente(d.status)));
+      setClientesEmDia(data.clientes.filter((d) => !clienteEhInadimplente(d.status)));
     } catch (error) {
       console.log(error);
     }

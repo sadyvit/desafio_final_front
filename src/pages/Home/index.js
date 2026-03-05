@@ -17,6 +17,7 @@ import iconeHomeOn from "../../assets/homeOn.svg";
 import iconeCobrancaInactive from "../../assets/icone-cobranca-inactive.svg";
 import ToastAlerta from "../../components/ToastAlerta";
 import useAuth from "../../hooks/useAuth";
+import { clienteEhInadimplente } from "../../utils/utils";
 
 function Home() {
   const {
@@ -125,8 +126,8 @@ function Home() {
       setClientesList(clientes);
       setClientesListTemp(clientes);
       setTotalClientes(quantidade);
-      setClientesInadimplentes(clientes.filter((d) => d.status === false));
-      setClientesEmDia(clientes.filter((d) => d.status === true));
+      setClientesInadimplentes(clientes.filter((d) => clienteEhInadimplente(d.status)));
+      setClientesEmDia(clientes.filter((d) => !clienteEhInadimplente(d.status)));
     } catch (error) {
       console.log(error);
     }

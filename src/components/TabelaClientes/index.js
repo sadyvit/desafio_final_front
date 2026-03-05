@@ -6,7 +6,7 @@ import cobrancaName from '../../assets/cobranca-name.svg';
 import emDia from '../../assets/emdia-icon.svg';
 import inadimplente from '../../assets/inadimplente-icon.svg';
 import useGlobal from '../../hooks/useGlobal';
-import { normalizarCpf, ordenarTabelaNomeCliente } from '../../utils/utils';
+import { clienteEhInadimplente, normalizarCpf, ordenarTabelaNomeCliente } from '../../utils/utils';
 import './styles.css';
 
 function ClientesTable({ offset }) {
@@ -61,7 +61,11 @@ function ClientesTable({ offset }) {
             <div className='line-items'>{cliente.telefone}</div>
 
             <div className='line-items'>
-              <img className='status-icon' src={cliente.status ? emDia : inadimplente} alt='emDia icon' />
+              <img
+                className='status-icon'
+                src={clienteEhInadimplente(cliente.status) ? inadimplente : emDia}
+                alt='status do cliente'
+              />
             </div>
             <div className='line-items cobrancaIcon'>
               <div onClick={() => abrirModalCadastrarCobranca(cliente)} className='imagemCobranca'>

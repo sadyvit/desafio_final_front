@@ -101,3 +101,7 @@ export function normalizarTelefone(telefone) {
 export function normalizarCep(cep) {
     return String(cep ?? "").replace(/\D/g, "").slice(0, 8);
 }
+
+export function clienteEhInadimplente(status) {
+    return status === true || status === 1 || status === "true" || status === "1";
+}
