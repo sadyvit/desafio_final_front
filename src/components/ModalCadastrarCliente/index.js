@@ -4,7 +4,14 @@ import iconeClientes from "../../assets/icone-clientes.svg";
 import useGlobal from "../../hooks/useGlobal";
 import { useState } from "react";
 import useAuth from "../../hooks/useAuth";
-import { normalizarCpf } from "../../utils/utils";
+import {
+  formatarCepInput,
+  formatarCpfInput,
+  formatarTelefoneInput,
+  normalizarCep,
+  normalizarCpf,
+  normalizarTelefone,
+} from "../../utils/utils";
 
 function ModalCadastrarCliente({ getClientes }) {
   const {
@@ -20,6 +27,7 @@ function ModalCadastrarCliente({ getClientes }) {
   const [erroCpf, setErroCpf] = useState("");
   const [erroTelefone, setErroTelefone] = useState("");
   const [salvarDadosCliente, setSalvarDadosCliente] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { token } = useAuth();
 
   function limparErros() {
@@ -52,6 +60,7 @@ function ModalCadastrarCliente({ getClientes }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (loading) return;
     if (salvarDadosCliente === false) return;
 
     if (
@@ -68,16 +77,17 @@ function ModalCadastrarCliente({ getClientes }) {
       nome_cliente: inputsClientes.nome_cliente,
       email: inputsClientes.email,
       cpf: normalizarCpf(inputsClientes.cpf),
-      telefone: inputsClientes.telefone,
+      telefone: normalizarTelefone(inputsClientes.telefone),
       logradouro: inputsClientes.logradouro,
       complemento: inputsClientes.complemento,
-      cep: inputsClientes.cep,
+      cep: normalizarCep(inputsClientes.cep),
       bairro: inputsClientes.bairro,
       cidade: inputsClientes.cidade,
       estado: inputsClientes.estado,
     };
 
     try {
+      setLoading(true);
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/clientes`,
         {
@@ -104,14 +114,25 @@ function ModalCadastrarCliente({ getClientes }) {
       fecharModalCadastrarCliente();
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   }
 
   function handleChange(event) {
-    const valorCampo =
-      event.target.name === "cpf"
-        ? (event.target.value || "").replace(/\D/g, "").slice(0, 11)
-        : event.target.value;
+    let valorCampo = event.target.value;
+
+    if (event.target.name === "cpf") {
+      valorCampo = formatarCpfInput(event.target.value);
+    }
+
+    if (event.target.name === "telefone") {
+      valorCampo = formatarTelefoneInput(event.target.value);
+    }
+
+    if (event.target.name === "cep") {
+      valorCampo = formatarCepInput(event.target.value);
+    }
 
     setInputsClientes({
       ...inputsClientes,
@@ -181,7 +202,7 @@ function ModalCadastrarCliente({ getClientes }) {
                   onChange={handleChange}
                   placeholder="Digite o CPF"
                   inputMode="numeric"
-                  maxLength={11}
+                  maxLength={14}
                 />
                 {erroCpf && (
                   <span className="erro-input-cliente">{erroCpf}</span>
@@ -198,6 +219,8 @@ function ModalCadastrarCliente({ getClientes }) {
                   value={inputsClientes.telefone}
                   onChange={handleChange}
                   placeholder="Digite o Telefone"
+                  inputMode="numeric"
+                  maxLength={15}
                 />
                 {erroTelefone && (
                   <span className="erro-input-cliente">{erroTelefone}</span>
@@ -239,6 +262,8 @@ function ModalCadastrarCliente({ getClientes }) {
                   value={inputsClientes.cep}
                   onChange={handleChange}
                   placeholder="Digite o CEP"
+                  inputMode="numeric"
+                  maxLength={9}
                 />
               </div>
 
@@ -284,14 +309,23 @@ function ModalCadastrarCliente({ getClientes }) {
             <button
               onClick={cancelarCadastrarCliente}
               className="cancelar-cadastro-cliente"
+              disabled={loading}
             >
               Cancelar
             </button>
             <button
               onClick={() => setSalvarDadosCliente(true)}
               className="concluir-cadastro-cliente"
+              disabled={loading}
             >
-              Aplicar
+              {loading ? (
+                <span className="btn-loading">
+                  <span className="spinner" aria-hidden="true" />
+                  Salvando...
+                </span>
+              ) : (
+                "Aplicar"
+              )}
             </button>
           </div>
         </form>
