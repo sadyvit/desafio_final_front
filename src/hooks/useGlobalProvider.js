@@ -90,8 +90,6 @@ function useGlobalProvider() {
   const [idCliente, setIdCliente] = useLocalStorage('idCliente', "");
   const [idCobranca, setIdCobranca] = useLocalStorage('idCobranca', "");
   const [cobrancaAExcluir, setCobrancaAExcluir] = useState(INPUT_COBRANCAS_VAZIO);
-  const [token, setToken] = useLocalStorage('token', "");
-  
 
   const {
     abrirEditarUsuario,
