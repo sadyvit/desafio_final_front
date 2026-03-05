@@ -23,13 +23,31 @@ function ModalExcluirCobranca({ getCobrancas }) {
       setMensagemToast("Esta cobrança não pode ser excluída!");
       return;
     }
-    await fetch(`${process.env.REACT_APP_API_URL}/cobrancas/${idCobranca}`, {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/cobrancas/${idCobranca}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     });
+
+    const contentType = response.headers.get("content-type") || "";
+    const data = contentType.includes("application/json")
+      ? await response.json()
+      : await response.text();
+
+    if (!response.ok) {
+      fecharModalExcluirCobranca();
+      setExibirToast(true);
+      setTipoMensagem("erro");
+      setMensagemToast(
+        typeof data === "string" && data.trim() !== ""
+          ? data
+          : "Não foi possível excluir a cobrança"
+      );
+      return;
+    }
+
     fecharModalExcluirCobranca();
     setExibirToast(true);
     setTipoMensagem("sucesso");

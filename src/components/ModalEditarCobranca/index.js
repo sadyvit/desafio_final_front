@@ -67,6 +67,12 @@ function ModalEditarCobranca({ getCobrancas }) {
     setStatusCobranca(event.target.value);
   }
 
+  function normalizarData(data) {
+    const novaData = new Date(data);
+    novaData.setHours(0, 0, 0, 0);
+    return novaData;
+  }
+
   useEffect(() => {
     getCobranca();
   }, [getCobranca, salvarEditarCobranca]);
@@ -88,18 +94,48 @@ function ModalEditarCobranca({ getCobrancas }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   async function getCobranca() {
     try {
-      const response = await fetch(
+      const endpoints = [
         `${process.env.REACT_APP_API_URL}/cobranca/${idCobranca}`,
-        {
+        `${process.env.REACT_APP_API_URL}/cobrancas/${idCobranca}`,
+      ];
+
+      let cobrancaEncontrada = null;
+      for (const endpoint of endpoints) {
+        const response = await fetch(endpoint, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
+        });
+
+        if (response.status === 404) {
+          continue;
         }
-      );
-      const data = await response.json();
-      setCobrancaEdicao(data[0]);
+
+        if (!response.ok) {
+          continue;
+        }
+
+        const data = await response.json();
+        const cobranca = Array.isArray(data)
+          ? data.find((item) => String(item?.id) === String(idCobranca)) || null
+          : String(data?.id) === String(idCobranca)
+          ? data
+          : null;
+
+        if (cobranca && typeof cobranca === "object") {
+          cobrancaEncontrada = cobranca;
+          break;
+        }
+      }
+
+      if (!cobrancaEncontrada) {
+        setCobrancaEdicao(null);
+        return;
+      }
+
+      setCobrancaEdicao(cobrancaEncontrada);
     } catch (error) {
       console.log(error);
     }
@@ -118,16 +154,21 @@ function ModalEditarCobranca({ getCobrancas }) {
       return;
     }
 
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const statusAjustado =
+      statusCobranca === "pendente" &&
+      normalizarData(inputsEditarCobranca.vencimento) < hoje
+        ? "vencida"
+        : statusCobranca;
+
     const body = {
       cliente_id: cobrancaEdicao.cliente_id,
       descricao: inputsEditarCobranca.descricao,
       vencimento: inputsEditarCobranca.vencimento,
       valor: Number(inputsEditarCobranca.valor),
-      status:
-        statusCobranca === "vencida" &&
-        new Date(inputsEditarCobranca.vencimento) > new Date()
-          ? "pendente"
-          : statusCobranca,
+      status: statusAjustado,
     };
 
     const response = await fetch(

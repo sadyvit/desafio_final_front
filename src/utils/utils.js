@@ -45,3 +45,59 @@ export function ordenarTabelaDataCobranca(setOrdemDataCobranca, ordemDataCobranc
     });
     setListTemp(cobrancasOrdenadasData);
 }
+
+export function normalizarCpf(cpf) {
+    const apenasDigitos = String(cpf ?? "").replace(/\D/g, "");
+
+    if (!apenasDigitos) {
+        return "";
+    }
+
+    if (apenasDigitos.length <= 11) {
+        return apenasDigitos.padStart(11, "0");
+    }
+
+    return apenasDigitos;
+}
+
+export function formatarCpfInput(cpf) {
+    const apenasDigitos = String(cpf ?? "").replace(/\D/g, "").slice(0, 11);
+
+    if (apenasDigitos.length <= 3) return apenasDigitos;
+    if (apenasDigitos.length <= 6) {
+        return `${apenasDigitos.slice(0, 3)}.${apenasDigitos.slice(3)}`;
+    }
+    if (apenasDigitos.length <= 9) {
+        return `${apenasDigitos.slice(0, 3)}.${apenasDigitos.slice(3, 6)}.${apenasDigitos.slice(6)}`;
+    }
+    return `${apenasDigitos.slice(0, 3)}.${apenasDigitos.slice(3, 6)}.${apenasDigitos.slice(6, 9)}-${apenasDigitos.slice(9)}`;
+}
+
+export function formatarTelefoneInput(telefone) {
+    const apenasDigitos = String(telefone ?? "").replace(/\D/g, "").slice(0, 11);
+
+    if (!apenasDigitos) return "";
+    if (apenasDigitos.length <= 2) return `(${apenasDigitos}`;
+    if (apenasDigitos.length <= 6) {
+        return `(${apenasDigitos.slice(0, 2)}) ${apenasDigitos.slice(2)}`;
+    }
+    if (apenasDigitos.length <= 10) {
+        return `(${apenasDigitos.slice(0, 2)}) ${apenasDigitos.slice(2, 6)}-${apenasDigitos.slice(6)}`;
+    }
+    return `(${apenasDigitos.slice(0, 2)}) ${apenasDigitos.slice(2, 7)}-${apenasDigitos.slice(7)}`;
+}
+
+export function formatarCepInput(cep) {
+    const apenasDigitos = String(cep ?? "").replace(/\D/g, "").slice(0, 8);
+
+    if (apenasDigitos.length <= 5) return apenasDigitos;
+    return `${apenasDigitos.slice(0, 5)}-${apenasDigitos.slice(5)}`;
+}
+
+export function normalizarTelefone(telefone) {
+    return String(telefone ?? "").replace(/\D/g, "").slice(0, 11);
+}
+
+export function normalizarCep(cep) {
+    return String(cep ?? "").replace(/\D/g, "").slice(0, 8);
+}

@@ -4,6 +4,14 @@ import iconeClientes from "../../assets/icone-clientes.svg";
 import useGlobal from "../../hooks/useGlobal";
 import { useState, useEffect } from "react";
 import useAuth from "../../hooks/useAuth";
+import {
+  formatarCepInput,
+  formatarCpfInput,
+  formatarTelefoneInput,
+  normalizarCep,
+  normalizarCpf,
+  normalizarTelefone,
+} from "../../utils/utils";
 
 function ModalEditarCliente({ getClienteDetalhado }) {
   const {
@@ -22,11 +30,17 @@ function ModalEditarCliente({ getClienteDetalhado }) {
   const [erroCpf, setErroCpf] = useState("");
   const [erroTelefone, setErroTelefone] = useState("");
   const [salvarDadosCliente, setSalvarDadosCliente] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { token } = useAuth();
 
   useEffect(() => {
     if (clienteEdicao) {
-      setInputsClientes(clienteDetalhado);
+      setInputsClientes({
+        ...clienteDetalhado,
+        cpf: formatarCpfInput(normalizarCpf(clienteDetalhado?.cpf)),
+        telefone: formatarTelefoneInput(clienteDetalhado?.telefone),
+        cep: formatarCepInput(clienteDetalhado?.cep),
+      });
       return;
     }
   }, [clienteEdicao, clienteDetalhado]);
@@ -61,6 +75,7 @@ function ModalEditarCliente({ getClienteDetalhado }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (loading) return;
     if (salvarDadosCliente === false) return;
 
     if (
@@ -76,17 +91,18 @@ function ModalEditarCliente({ getClienteDetalhado }) {
     const novoCliente = {
       nome_cliente: inputsClientes.nome_cliente,
       email: inputsClientes.email,
-      cpf: inputsClientes.cpf,
-      telefone: inputsClientes.telefone,
+      cpf: normalizarCpf(inputsClientes.cpf),
+      telefone: normalizarTelefone(inputsClientes.telefone),
       logradouro: inputsClientes.logradouro,
       complemento: inputsClientes.complemento,
-      cep: inputsClientes.cep,
+      cep: normalizarCep(inputsClientes.cep),
       bairro: inputsClientes.bairro,
       cidade: inputsClientes.cidade,
       estado: inputsClientes.estado,
     };
 
     try {
+      setLoading(true);
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/clientes/${clienteDetalhado.id}`,
         {
@@ -114,13 +130,29 @@ function ModalEditarCliente({ getClienteDetalhado }) {
       fecharModalEditarCliente();
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   }
 
   function handleChange(event) {
+    let valorCampo = event.target.value;
+
+    if (event.target.name === "cpf") {
+      valorCampo = formatarCpfInput(event.target.value);
+    }
+
+    if (event.target.name === "telefone") {
+      valorCampo = formatarTelefoneInput(event.target.value);
+    }
+
+    if (event.target.name === "cep") {
+      valorCampo = formatarCepInput(event.target.value);
+    }
+
     setInputsClientes({
       ...inputsClientes,
-      [event.target.name]: event.target.value,
+      [event.target.name]: valorCampo,
     });
     limparErros();
   }
@@ -185,6 +217,8 @@ function ModalEditarCliente({ getClienteDetalhado }) {
                   value={inputsClientes.cpf}
                   onChange={handleChange}
                   placeholder="Digite o CPF"
+                  inputMode="numeric"
+                  maxLength={14}
                 />
                 {erroCpf && (
                   <span className="erro-input-cliente">{erroCpf}</span>
@@ -201,6 +235,8 @@ function ModalEditarCliente({ getClienteDetalhado }) {
                   value={inputsClientes.telefone}
                   onChange={handleChange}
                   placeholder="Digite o Telefone"
+                  inputMode="numeric"
+                  maxLength={15}
                 />
                 {erroTelefone && (
                   <span className="erro-input-cliente">{erroTelefone}</span>
@@ -242,6 +278,8 @@ function ModalEditarCliente({ getClienteDetalhado }) {
                   value={inputsClientes.cep}
                   onChange={handleChange}
                   placeholder="Digite o CEP"
+                  inputMode="numeric"
+                  maxLength={9}
                 />
               </div>
 
@@ -287,14 +325,23 @@ function ModalEditarCliente({ getClienteDetalhado }) {
             <button
               onClick={cancelarEditarCliente}
               className="cancelar-cadastro-cliente"
+              disabled={loading}
             >
               Cancelar
             </button>
             <button
               onClick={() => setSalvarDadosCliente(true)}
               className="concluir-cadastro-cliente"
+              disabled={loading}
             >
-              Aplicar
+              {loading ? (
+                <span className="btn-loading">
+                  <span className="spinner" aria-hidden="true" />
+                  Salvando...
+                </span>
+              ) : (
+                "Aplicar"
+              )}
             </button>
           </div>
         </form>

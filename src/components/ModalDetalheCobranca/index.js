@@ -16,37 +16,67 @@ function ModalDetalheCobranca() {
   const { token } = useAuth();
 
   useEffect(() => {
-    if (idCobranca && token) {
+    if (
+      idCobranca &&
+      token &&
+      String(cobrancaClienteDetalhar?.id ?? "") !== String(idCobranca)
+    ) {
       getCobrancaADetalhar();
     }
     // eslint-disable-next-line
-  }, [idCobranca, token]);
+  }, [idCobranca, token, cobrancaClienteDetalhar?.id]);
 
   async function getCobrancaADetalhar() {
     try {
-      const response = await fetch(
+      const endpoints = [
         `${process.env.REACT_APP_API_URL}/cobranca/${idCobranca}`,
-        {
+        `${process.env.REACT_APP_API_URL}/cobrancas/${idCobranca}`,
+      ];
+
+      let cobrancaEncontrada = null;
+      for (const endpoint of endpoints) {
+        const response = await fetch(endpoint, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
+        });
+
+        if (response.status === 404) {
+          continue;
         }
-      );
-      const data = await response.json();
-      setCobrancaClienteDetalhar(data);
+
+        if (!response.ok) {
+          continue;
+        }
+
+        const data = await response.json();
+        const cobranca = Array.isArray(data)
+          ? data.find((item) => String(item?.id) === String(idCobranca)) || null
+          : String(data?.id) === String(idCobranca)
+          ? data
+          : null;
+
+        if (cobranca && typeof cobranca === "object") {
+          cobrancaEncontrada = cobranca;
+          break;
+        }
+      }
+
+      if (!cobrancaEncontrada) {
+        setCobrancaClienteDetalhar({});
+        return;
+      }
+
+      setCobrancaClienteDetalhar(cobrancaEncontrada);
     } catch (error) {
       console.log(error);
+      setCobrancaClienteDetalhar({});
     }
   }
 
-  // Checagem para garantir que há dados
-  if (!cobrancaClienteDetalhar || !cobrancaClienteDetalhar.id) {
-    return null;
-  }
-
-  const cobranca = cobrancaClienteDetalhar;
+  const cobranca = cobrancaClienteDetalhar || {};
   // Formatação de data segura
   let dataVenc = "";
   if (cobranca.vencimento) {
@@ -95,7 +125,7 @@ function ModalDetalheCobranca() {
         <div className="detalhe-id-status">
           <div className="detalhe-id">
             <span className="titulo-detalhe">ID cobrança</span>
-            <span>{cobranca.id || "-"}</span>
+            <span>{cobranca.id ?? "-"}</span>
           </div>
           <div className="detalhe-status">
             <span className="titulo-detalhe">Status</span>
@@ -116,6 +146,9 @@ function ModalDetalheCobranca() {
             </span>
           </div>
         </div>
+        {!cobranca.id && (
+          <p className="detalhe-descricao">Nao foi possivel carregar os detalhes desta cobranca.</p>
+        )}
       </div>
     </div>
   );

@@ -5,6 +5,12 @@ import iconeOcultar from "../../assets/icone-ocultar.svg";
 import useAuth from "../../hooks/useAuth";
 import useGlobal from "../../hooks/useGlobal";
 import { useEffect, useState } from "react";
+import {
+  formatarCpfInput,
+  formatarTelefoneInput,
+  normalizarCpf,
+  normalizarTelefone,
+} from "../../utils/utils";
 
 function ModalEditarUsuario() {
   const {
@@ -22,6 +28,7 @@ function ModalEditarUsuario() {
   const [erroNome, setErroNome] = useState("");
   const [erroEmail, setErroEmail] = useState("");
   const [erroSenha, setErroSenha] = useState("");
+  const [loading, setLoading] = useState(false);
   const [tipoInputSenha, setTipoInputSenha] = useState("password");
   const {
     token,
@@ -40,8 +47,8 @@ function ModalEditarUsuario() {
       setInputsEditarUsuario({
         nome_usuario: usuarioEdicao.nome_usuario,
         email: usuarioEdicao.email,
-        cpf: usuarioEdicao.cpf,
-        telefone: usuarioEdicao.telefone,
+        cpf: formatarCpfInput(normalizarCpf(usuarioEdicao.cpf)),
+        telefone: formatarTelefoneInput(usuarioEdicao.telefone),
       });
       return;
     }
@@ -53,9 +60,19 @@ function ModalEditarUsuario() {
   }
 
   function handleChange(event) {
+    let valorCampo = event.target.value;
+
+    if (event.target.name === "cpf") {
+      valorCampo = formatarCpfInput(event.target.value);
+    }
+
+    if (event.target.name === "telefone") {
+      valorCampo = formatarTelefoneInput(event.target.value);
+    }
+
     setInputsEditarUsuario({
       ...inputsEditarUsuario,
-      [event.target.name]: event.target.value,
+      [event.target.name]: valorCampo,
     });
     setErroNome("");
     setErroEmail("");
@@ -80,6 +97,7 @@ function ModalEditarUsuario() {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (loading) return;
 
     if (inputsEditarUsuario.nome_usuario === "") {
       setErroNome("Este campo deve ser preenchido");
@@ -111,40 +129,45 @@ function ModalEditarUsuario() {
       nome_usuario: inputsEditarUsuario.nome_usuario,
       email: inputsEditarUsuario.email,
       senha: inputsEditarUsuario.senha,
-      cpf: inputsEditarUsuario.cpf,
-      telefone: inputsEditarUsuario.telefone,
+      cpf: normalizarCpf(inputsEditarUsuario.cpf),
+      telefone: normalizarTelefone(inputsEditarUsuario.telefone),
     };
 
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/usuario`, {
-      method: "PUT",
-      headers: {
-        "Content-type": "Application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(body),
-    });
+    try {
+      setLoading(true);
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/usuario`, {
+        method: "PUT",
+        headers: {
+          "Content-type": "Application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
 
-    const data = await response.json();
-    if (!response.ok) {
-      setExibirToast(true);
-      setTipoMensagem("erro");
-      setMensagemToast(data);
-      return;
+      const data = await response.json();
+      if (!response.ok) {
+        setExibirToast(true);
+        setTipoMensagem("erro");
+        setMensagemToast(data);
+        return;
+      }
+
+      await getUsuario();
+      setNomeUsuarioHeader(data[0].nome_usuario.split(" ")[0]);
+      setPrimeiraInicialHeader(data[0].nome_usuario.split(" ")[0][0]);
+      setSegundaInicialHeader(
+        data[0].nome_usuario.split(" ").length >= 2
+          ? data[0].nome_usuario.split(" ")[1][0]
+          : ""
+      );
+      setAlteracaoUsuarioSucesso(true);
+      fecharModal();
+      setErroNome("");
+      setErroEmail("");
+      setErroSenha("");
+    } finally {
+      setLoading(false);
     }
-
-    await getUsuario();
-    setNomeUsuarioHeader(data[0].nome_usuario.split(" ")[0]);
-    setPrimeiraInicialHeader(data[0].nome_usuario.split(" ")[0][0]);
-    setSegundaInicialHeader(
-      data[0].nome_usuario.split(" ").length >= 2
-        ? data[0].nome_usuario.split(" ")[1][0]
-        : ""
-    );
-    setAlteracaoUsuarioSucesso(true);
-    fecharModal();
-    setErroNome("");
-    setErroEmail("");
-    setErroSenha("");
   }
 
   return (
@@ -202,6 +225,8 @@ function ModalEditarUsuario() {
                   value={inputsEditarUsuario.cpf}
                   onChange={handleChange}
                   placeholder="Digite seu CPF"
+                  inputMode="numeric"
+                  maxLength={14}
                 />
               </div>
               <div className="usuario-input-container min-width-47">
@@ -213,6 +238,8 @@ function ModalEditarUsuario() {
                   value={inputsEditarUsuario.telefone}
                   onChange={handleChange}
                   placeholder="Digite seu Telefone"
+                  inputMode="numeric"
+                  maxLength={15}
                 />
               </div>
             </div>
@@ -261,7 +288,16 @@ function ModalEditarUsuario() {
                 <span className="erro-input-usuario">{erroSenha}</span>
               )}
             </div>
-            <button>Aplicar</button>
+            <button disabled={loading}>
+              {loading ? (
+                <span className="btn-loading">
+                  <span className="spinner" aria-hidden="true" />
+                  Salvando...
+                </span>
+              ) : (
+                "Aplicar"
+              )}
+            </button>
           </div>
         </form>
       </div>

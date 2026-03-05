@@ -1,6 +1,7 @@
 import "./style.css";
 import iconeEditarVerde from "../../assets/icone-editar-verde.svg";
 import useGlobal from "../../hooks/useGlobal";
+import { normalizarCpf } from "../../utils/utils";
 
 function TabelaDetalharCliente() {
   const { setAbrirModalEditarCliente, clienteDetalhado, setClienteEdicao } =
@@ -37,7 +38,7 @@ function TabelaDetalharCliente() {
           <div className="dado-cpf">
             <span className="titulo-coluna-perfil-span">CPF</span>
             <span className="descicao-coluna-perfil-span">
-              {clienteDetalhado.cpf}
+              {normalizarCpf(clienteDetalhado.cpf)}
             </span>
           </div>
         </div>

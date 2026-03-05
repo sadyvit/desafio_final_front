@@ -20,18 +20,6 @@ function Login() {
   }
 
   useEffect(() => {
-    let interval;
-    if (auth.exibirToastLogin) {
-      interval = setInterval(() => {
-        auth.setExibirToastLogin(true);
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [auth]);
-
-  useEffect(() => {
     if (!auth.exibirToastLogin) return;
     const timeout = setTimeout(() => {
       auth.setExibirToastLogin(false);

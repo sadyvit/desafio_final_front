@@ -72,6 +72,12 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
     setStatusCobranca(event.target.value);
   }
 
+  function normalizarData(data) {
+    const novaData = new Date(data);
+    novaData.setHours(0, 0, 0, 0);
+    return novaData;
+  }
+
   async function getClientes() {
     try {
       const response = await fetch(
@@ -114,12 +120,21 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
       return;
     }
 
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const statusAjustado =
+      statusCobranca === "pendente" &&
+      normalizarData(inputsCadastroCobranca.vencimento) < hoje
+        ? "vencida"
+        : statusCobranca;
+
     const body = {
       cliente_id: idCliente,
       descricao: inputsCadastroCobranca.descricao,
       vencimento: inputsCadastroCobranca.vencimento,
       valor: inputsCadastroCobranca.valor,
-      status: statusCobranca,
+      status: statusAjustado,
     };
 
     const endpoints = [
@@ -253,7 +268,7 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
                     name="status"
                     onChange={handleRadioChange}
                     value="paga"
-                    checked={statusCobranca === "paga" ? true : false}
+                    checked={statusCobranca === "paga"}
                   />
                   <p className="cobranca-label" htmlFor="cobranca-status">
                     Cobrança paga
@@ -266,7 +281,7 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
                     name="status"
                     onChange={handleRadioChange}
                     value="pendente"
-                    checked={statusCobranca === "paga" ? false : true}
+                    checked={statusCobranca === "pendente"}
                   />
                   <p className="cobranca-label" htmlFor="cobranca-status">
                     Cobrança pendente
