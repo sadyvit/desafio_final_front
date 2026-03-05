@@ -4,6 +4,7 @@ import iconeClientes from "../../assets/icone-clientes.svg";
 import useGlobal from "../../hooks/useGlobal";
 import { useState, useEffect } from "react";
 import useAuth from "../../hooks/useAuth";
+import { normalizarCpf } from "../../utils/utils";
 
 function ModalEditarCliente({ getClienteDetalhado }) {
   const {
@@ -26,7 +27,10 @@ function ModalEditarCliente({ getClienteDetalhado }) {
 
   useEffect(() => {
     if (clienteEdicao) {
-      setInputsClientes(clienteDetalhado);
+      setInputsClientes({
+        ...clienteDetalhado,
+        cpf: normalizarCpf(clienteDetalhado?.cpf),
+      });
       return;
     }
   }, [clienteEdicao, clienteDetalhado]);
@@ -76,7 +80,7 @@ function ModalEditarCliente({ getClienteDetalhado }) {
     const novoCliente = {
       nome_cliente: inputsClientes.nome_cliente,
       email: inputsClientes.email,
-      cpf: inputsClientes.cpf,
+      cpf: normalizarCpf(inputsClientes.cpf),
       telefone: inputsClientes.telefone,
       logradouro: inputsClientes.logradouro,
       complemento: inputsClientes.complemento,
@@ -118,9 +122,14 @@ function ModalEditarCliente({ getClienteDetalhado }) {
   }
 
   function handleChange(event) {
+    const valorCampo =
+      event.target.name === "cpf"
+        ? (event.target.value || "").replace(/\D/g, "").slice(0, 11)
+        : event.target.value;
+
     setInputsClientes({
       ...inputsClientes,
-      [event.target.name]: event.target.value,
+      [event.target.name]: valorCampo,
     });
     limparErros();
   }
@@ -185,6 +194,8 @@ function ModalEditarCliente({ getClienteDetalhado }) {
                   value={inputsClientes.cpf}
                   onChange={handleChange}
                   placeholder="Digite o CPF"
+                  inputMode="numeric"
+                  maxLength={11}
                 />
                 {erroCpf && (
                   <span className="erro-input-cliente">{erroCpf}</span>

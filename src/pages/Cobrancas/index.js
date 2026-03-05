@@ -56,19 +56,6 @@ function Cobrancas() {
   }, [alteracaoUsuarioSucesso, setAlteracaoUsuarioSucesso]);
 
   useEffect(() => {
-    let interval;
-    if (exibirToast) {
-      interval = setInterval(() => {
-        setExibirToast(true);
-      }, 1000);
-    } else {
-      clearInterval(interval);
-    }
-
-    return () => clearInterval(interval);
-  }, [exibirToast, setExibirToast]);
-
-  useEffect(() => {
     const timeout = setTimeout(() => {
       setExibirToast(false);
     }, 5000);

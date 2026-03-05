@@ -45,3 +45,17 @@ export function ordenarTabelaDataCobranca(setOrdemDataCobranca, ordemDataCobranc
     });
     setListTemp(cobrancasOrdenadasData);
 }
+
+export function normalizarCpf(cpf) {
+    const apenasDigitos = String(cpf ?? "").replace(/\D/g, "");
+
+    if (!apenasDigitos) {
+        return "";
+    }
+
+    if (apenasDigitos.length <= 11) {
+        return apenasDigitos.padStart(11, "0");
+    }
+
+    return apenasDigitos;
+}

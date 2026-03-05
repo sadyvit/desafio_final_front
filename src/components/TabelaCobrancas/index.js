@@ -111,13 +111,19 @@ function TabelaCobrancas({ offset }) {
                 <div className="editar-excluir-cobranca">
                   <div
                     className="icones-editar-excluir"
-                    onClick={() => abrirModalEditarCobranca(cobranca)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      abrirModalEditarCobranca(cobranca);
+                    }}
                   >
                     <img src={iconeEditar} alt="" />
                     <span>Editar</span>
                   </div>
                   <div
-                    onClick={() => handleClickModalExcluir(cobranca)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleClickModalExcluir(cobranca);
+                    }}
                     className="icones-editar-excluir excluir-cobranca-icone"
                   >
                     <img src={iconeExcluir} alt="" />

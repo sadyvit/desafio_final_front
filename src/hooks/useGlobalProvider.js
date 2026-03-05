@@ -90,6 +90,8 @@ function useGlobalProvider() {
   const [idCliente, setIdCliente] = useLocalStorage('idCliente', "");
   const [idCobranca, setIdCobranca] = useLocalStorage('idCobranca', "");
   const [cobrancaAExcluir, setCobrancaAExcluir] = useState(INPUT_COBRANCAS_VAZIO);
+  const [token, setToken] = useLocalStorage('token', "");
+  
 
   const {
     abrirEditarUsuario,
@@ -207,12 +209,14 @@ function useGlobalProvider() {
   function abrirModalDetalheCobrancaPageCliente(cobranca) {
     setIdCobranca(cobranca.id);
     setNomeClienteModalCobranca(clienteDetalhado.nome_cliente);
+    setCobrancaClienteDetalhar(cobranca);
     setAbrirModalDetalharCobranca(true);
   }
 
   function abrirModalDetalheCobranca(cobranca) {
     setIdCobranca(cobranca.id);
     setNomeClienteModalCobranca(cobranca.nome_cliente);
+    setCobrancaClienteDetalhar(cobranca);
     setAbrirModalDetalharCobranca(true);
   }
   function fecharModalExcluirCobranca() {

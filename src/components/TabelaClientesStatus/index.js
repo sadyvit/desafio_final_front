@@ -1,6 +1,7 @@
 import "./styles.css";
 import useGlobal from "../../hooks/useGlobal";
 import { NavLink } from 'react-router-dom';
+import { normalizarCpf } from "../../utils/utils";
 
 function TabelaClientesStatus({ iconeCliente, tituloStatus, classeQuantidade, array }) {
   const { setClientesListTemp, clientesInadimplentes, clientesEmDia, setClickFiltroClientes } = useGlobal();
@@ -28,7 +29,7 @@ function TabelaClientesStatus({ iconeCliente, tituloStatus, classeQuantidade, ar
         <div className="linha-cliente" key={cliente.id}>
           <div className={"celula-cliente col-clientes"}>{cliente.nome_cliente}</div>
           <div className={"celula-cliente col-id-cliente"}>{cliente.id}</div>
-          <div className={"celula-cliente col-cpf"}>{cliente.cpf}</div>
+          <div className={"celula-cliente col-cpf"}>{normalizarCpf(cliente.cpf)}</div>
         </div>
       ))}
       <span className="ver-todos" >
