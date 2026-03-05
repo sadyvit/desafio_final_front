@@ -10,6 +10,7 @@ function Login() {
   const [senha, setSenha] = useState("");
   const [erroEmail, setErroEmail] = useState("");
   const [erroSenha, setErroSenha] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const auth = useAuth();
   const navigate = useNavigate();
@@ -38,7 +39,9 @@ function Login() {
     return () => clearTimeout(timeout);
   }, [auth]);
 
-  function handleClick() {
+  async function handleClick() {
+    if (loading) return;
+
     if (!email) {
       setErroEmail("Este campo deve ser preenchido");
       return;
@@ -47,7 +50,10 @@ function Login() {
       setErroSenha("Este campo deve ser preenchido");
       return;
     }
-    auth.signIn(email, senha, () => goTo("/home"));
+
+    setLoading(true);
+    await auth.signIn(email, senha, () => goTo("/home"));
+    setLoading(false);
   }
 
   function handleChangeEmail(e) {
@@ -90,11 +96,23 @@ function Login() {
                 placeholder="Digite sua senha"
                 onChange={handleChangeSenha}
                 value={senha}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !loading) {
+                    handleClick();
+                  }
+                }}
               />
               {erroSenha && <label className="erro">{erroSenha}</label>}
             </div>
-            <button className="btn" onClick={handleClick}>
-              Entrar
+            <button className="btn" onClick={handleClick} disabled={loading}>
+              {loading ? (
+                <span className="btn-loading">
+                  <span className="spinner" aria-hidden="true" />
+                  Entrando...
+                </span>
+              ) : (
+                "Entrar"
+              )}
             </button>
             <label>
               Ainda não possui uma conta?{" "}

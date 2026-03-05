@@ -74,6 +74,8 @@
   cursor: pointer;
   padding: 4px 55.5px 4px 55.5px;
   align-items: center;
+  display: flex;
+  justify-content: center;
   font-family: "Nunito", sans-serif;
   font-style: normal;
   font-weight: normal;
@@ -86,4 +88,30 @@
 }
 .btn:hover {
   background-color: hsl(328, 68%, 59%);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #f8f8f9;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.btn-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
