@@ -11,12 +11,13 @@ import ModalEditarCobranca from "../../components/ModalEditarCobranca";
 import ModalExcluirCobranca from "../../components/ModalExcluirCobranca";
 import Sidebar from "../../components/Sidebar";
 import UserMenu from "../../components/UserMenu";
-import useGlobal from "../../hooks/useGlobal";
 import TabelaCobrancas from "../../components/TabelaCobrancas";
 import ToastAlerta from "../../components/ToastAlerta";
-import useAuth from "../../hooks/useAuth";
 import DivNaoEncontrado from "../../components/DivNaoEncontrado";
 import Paginacao from "../../components/Paginacao";
+import useGlobalUi from "../../hooks/global/useGlobalUi";
+import useGlobalListas from "../../hooks/global/useGlobalListas";
+import { useGetCobrancasQuery, useLazySearchCobrancasQuery } from "../../store/apiSlice";
 import "./styles.css";
 
 function Cobrancas() {
@@ -33,15 +34,22 @@ function Cobrancas() {
     abrirModalEdicaoCobranca,
     abrirModalDetalharCobranca,
     abrirModalExcluirCobranca,
-    cobrancasList,
-    setCobrancasListTemp,
-    setCobrancasList,
     clickFiltroCobrancas,
     totalCobrancas,
     setTotalCobrancas,
-  } = useGlobal();
+  } = useGlobalUi();
+
+  const {
+    cobrancasList,
+    setCobrancasListTemp,
+    setCobrancasList,
+  } = useGlobalListas();
+
+  const { data: cobrancasData, error: cobrancasError, refetch: refetchCobrancas } =
+    useGetCobrancasQuery({ limit: 1000, offset: 0 });
+  const [searchCobrancas] = useLazySearchCobrancasQuery();
+
   const [pesquisaCobranca, setPesquisaCobranca] = useState("");
-  const { token } = useAuth();
   const [naoEncontrado, setNaoEncontrado] = useState(false);
   const [offset, setOffset] = useState(0);
 
@@ -65,75 +73,54 @@ function Cobrancas() {
     };
   }, [exibirToast, setExibirToast]);
 
-  useEffect(() => {
-    getCobrancas();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   async function getCobrancas() {
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/cobrancas?limit=1000&offset=0`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    await refetchCobrancas();
+  }
 
-      if (!response.ok) {
-        setExibirToast(true);
-        setTipoMensagem("erro");
-        setMensagemToast(
-          response.status === 401
-            ? "Sessão expirada. Faça login novamente."
-            : "Não foi possível carregar cobranças."
-        );
-        return;
-      }
-
-      const data = await response.json();
-
-      const cobrancas = Array.isArray(data?.cobrancas) ? data.cobrancas : [];
-      const quantidade = Number(data?.quantidadeCobrancas?.[0]?.count ?? 0);
-
-      setCobrancasList(cobrancas);
-      const vencidas = cobrancas.filter(
-        (d) => d.status.toLowerCase() === "vencida"
-      );
-      const previstas = cobrancas.filter(
-        (d) => d.status.toLowerCase() === "pendente"
-      );
-      const pagas = cobrancas.filter(
-        (d) => d.status.toLowerCase() === "paga"
-      );
-      setTotalCobrancas(
-        clickFiltroCobrancas === "pagas"
-          ? pagas.length
-          : clickFiltroCobrancas === "previstas"
-          ? previstas.length
-          : clickFiltroCobrancas === "vencidas"
-          ? vencidas.length
-          : quantidade
-      );
-      setCobrancasListTemp(
-        clickFiltroCobrancas === "pagas"
-          ? pagas
-          : clickFiltroCobrancas === "previstas"
-          ? previstas
-          : clickFiltroCobrancas === "vencidas"
-          ? vencidas
-          : cobrancas
-      );
-      setNaoEncontrado(cobrancas.length === 0);
-    } catch (error) {
-      console.log(error.message);
+  useEffect(() => {
+    if (cobrancasError) {
       setExibirToast(true);
       setTipoMensagem("erro");
-      setMensagemToast("Erro de conexão ao carregar cobranças.");
+      setMensagemToast("Nao foi possivel carregar cobrancas.");
+      return;
     }
-  }
+
+    if (!cobrancasData) {
+      return;
+    }
+
+    const cobrancas = Array.isArray(cobrancasData?.cobrancas)
+      ? cobrancasData.cobrancas
+      : [];
+    const quantidade = Number(cobrancasData?.quantidadeCobrancas?.[0]?.count ?? 0);
+
+    setCobrancasList(cobrancas);
+    const vencidas = cobrancas.filter((d) => d.status.toLowerCase() === "vencida");
+    const previstas = cobrancas.filter((d) => d.status.toLowerCase() === "pendente");
+    const pagas = cobrancas.filter((d) => d.status.toLowerCase() === "paga");
+
+    setTotalCobrancas(
+      clickFiltroCobrancas === "pagas"
+        ? pagas.length
+        : clickFiltroCobrancas === "previstas"
+        ? previstas.length
+        : clickFiltroCobrancas === "vencidas"
+        ? vencidas.length
+        : quantidade
+    );
+
+    setCobrancasListTemp(
+      clickFiltroCobrancas === "pagas"
+        ? pagas
+        : clickFiltroCobrancas === "previstas"
+        ? previstas
+        : clickFiltroCobrancas === "vencidas"
+        ? vencidas
+        : cobrancas
+    );
+    setNaoEncontrado(cobrancas.length === 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cobrancasData, cobrancasError, clickFiltroCobrancas]);
 
   async function handleRequestApi(event) {
     if (event.key !== "Enter") return;
@@ -144,28 +131,7 @@ function Cobrancas() {
       return;
     }
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/cobrancas/busca?busca=${pesquisaCobranca}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        setExibirToast(true);
-        setTipoMensagem("erro");
-        setMensagemToast(
-          response.status === 401
-            ? "Sessão expirada. Faça login novamente."
-            : "Não foi possível pesquisar cobranças."
-        );
-        return;
-      }
-
-      const data = await response.json();
+      const data = await searchCobrancas(pesquisaCobranca).unwrap();
 
       if (!Array.isArray(data) || !data.length) {
         setNaoEncontrado(true);
@@ -178,7 +144,7 @@ function Cobrancas() {
       console.log(error);
       setExibirToast(true);
       setTipoMensagem("erro");
-      setMensagemToast("Erro de conexão ao pesquisar cobranças.");
+      setMensagemToast("Nao foi possivel pesquisar cobrancas.");
     }
   }
 

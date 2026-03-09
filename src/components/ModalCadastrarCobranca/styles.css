@@ -161,6 +161,11 @@ input[type="radio"]:checked {
     cursor: pointer;
 }
 
+.cancelar-cadastro-cobranca:disabled, .concluir-cadastro-cobranca:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
 .cancelar-cadastro-cobranca {
     background-color: #F8F8F9;
     color: #0E8750;
@@ -170,4 +175,26 @@ input[type="radio"]:checked {
 .concluir-cadastro-cobranca {
     background-color: #DA0175;
     color: #F8F8F9;
+}
+
+.btn-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #f8f8f9;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
