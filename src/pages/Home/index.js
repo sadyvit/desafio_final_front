@@ -6,7 +6,6 @@ import iconeVencida from "../../assets/icone-cobranca-vencida.svg";
 import TabelaClientesStatus from "../../components/TabelaClientesStatus";
 import TabelaDadosCobrancas from "../../components/TabelaDadosCobrancas";
 import UserMenu from "../../components/UserMenu";
-import useGlobal from "../../hooks/useGlobal";
 import ModalEditarUsuario from "../../components/ModalEditarUsuario";
 import "./styles.css";
 import { useEffect, useState } from "react";
@@ -16,8 +15,10 @@ import iconeClienteOff from "../../assets/clientsOff.svg";
 import iconeHomeOn from "../../assets/homeOn.svg";
 import iconeCobrancaInactive from "../../assets/icone-cobranca-inactive.svg";
 import ToastAlerta from "../../components/ToastAlerta";
-import useAuth from "../../hooks/useAuth";
 import { clienteEhInadimplente } from "../../utils/utils";
+import useGlobalUi from "../../hooks/global/useGlobalUi";
+import useGlobalListas from "../../hooks/global/useGlobalListas";
+import { useGetClientesQuery, useGetCobrancasQuery } from "../../store/apiSlice";
 
 function Home() {
   const {
@@ -28,6 +29,13 @@ function Home() {
     setExibirToast,
     mensagemToast,
     tipoMensagem,
+    setMensagemToast,
+    setTipoMensagem,
+    setTotalCobrancas,
+    setTotalClientes,
+  } = useGlobalUi();
+
+  const {
     setClientesList,
     setClientesListTemp,
     clientesInadimplentes,
@@ -43,10 +51,17 @@ function Home() {
     setCobrancasListTemp,
     setCobrancasList,
     cobrancasList,
-    setTotalCobrancas,
-    setTotalClientes,
-  } = useGlobal();
-  const { token } = useAuth();
+  } = useGlobalListas();
+
+  const { data: clientesData, error: clientesError } = useGetClientesQuery({
+    limit: 1000,
+    offset: 0,
+  });
+  const { data: cobrancasData, error: cobrancasError } = useGetCobrancasQuery({
+    limit: 1000,
+    offset: 0,
+  });
+
   const [somaVencidas, setSomaVencidas] = useState(0);
   const [somaPagas, setSomaPagas] = useState(0);
   const [somaPrevistas, setSomaPrevistas] = useState(0);
@@ -89,92 +104,95 @@ function Home() {
   }, [exibirToast, setExibirToast]);
 
   useEffect(() => {
-    getClientes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (clientesError) {
+      setClientesList([]);
+      setClientesListTemp([]);
+      setClientesInadimplentes([]);
+      setClientesEmDia([]);
+      setTotalClientes(0);
+      setExibirToast(true);
+      setTipoMensagem("erro");
+      setMensagemToast("Nao foi possivel carregar clientes.");
+      return;
+    }
+
+    if (!clientesData) {
+      return;
+    }
+
+    const clientes = Array.isArray(clientesData?.clientes)
+      ? clientesData.clientes
+      : [];
+    const quantidade = Number(clientesData?.quantidadeClientes?.[0]?.count ?? 0);
+
+    setClientesList(clientes);
+    setClientesListTemp(clientes);
+    setTotalClientes(quantidade);
+    setClientesInadimplentes(
+      clientes.filter((d) => clienteEhInadimplente(d.status))
+    );
+    setClientesEmDia(clientes.filter((d) => !clienteEhInadimplente(d.status)));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    clientesData,
+    clientesError,
+    setClientesEmDia,
+    setClientesInadimplentes,
+    setClientesList,
+    setClientesListTemp,
+    setExibirToast,
+    setMensagemToast,
+    setTipoMensagem,
+    setTotalClientes,
+  ]);
 
   useEffect(() => {
-    getCobrancas();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function getClientes() {
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/clientes?limit=1000&offset=0`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        setClientesList([]);
-        setClientesListTemp([]);
-        setClientesInadimplentes([]);
-        setClientesEmDia([]);
-        setTotalClientes(0);
-        return;
-      }
-
-      const data = await response.json();
-      const clientes = Array.isArray(data?.clientes) ? data.clientes : [];
-      const quantidade = Number(data?.quantidadeClientes?.[0]?.count ?? 0);
-
-      setClientesList(clientes);
-      setClientesListTemp(clientes);
-      setTotalClientes(quantidade);
-      setClientesInadimplentes(clientes.filter((d) => clienteEhInadimplente(d.status)));
-      setClientesEmDia(clientes.filter((d) => !clienteEhInadimplente(d.status)));
-    } catch (error) {
-      console.log(error);
+    if (cobrancasError) {
+      setCobrancasListTemp([]);
+      setCobrancasList([]);
+      setCobrancasVencidas([]);
+      setCobrancasPrevistas([]);
+      setCobrancasPagas([]);
+      setTotalCobrancas(0);
+      setExibirToast(true);
+      setTipoMensagem("erro");
+      setMensagemToast("Nao foi possivel carregar cobrancas.");
+      return;
     }
-  }
 
-  async function getCobrancas() {
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/cobrancas?limit=1000&offset=0`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        setCobrancasListTemp([]);
-        setCobrancasList([]);
-        setCobrancasVencidas([]);
-        setCobrancasPrevistas([]);
-        setCobrancasPagas([]);
-        setTotalCobrancas(0);
-        return;
-      }
-
-      const data = await response.json();
-      const cobrancas = Array.isArray(data?.cobrancas) ? data.cobrancas : [];
-      const quantidade = Number(data?.quantidadeCobrancas?.[0]?.count ?? 0);
-
-      setCobrancasListTemp(cobrancas);
-      setTotalCobrancas(quantidade);
-      setCobrancasList(cobrancas);
-      setCobrancasVencidas(
-        cobrancas.filter((d) => d.status.toLowerCase() === "vencida")
-      );
-      setCobrancasPrevistas(
-        cobrancas.filter((d) => d.status.toLowerCase() === "pendente")
-      );
-      setCobrancasPagas(
-        cobrancas.filter((d) => d.status.toLowerCase() === "paga")
-      );
-    } catch (error) {
-      console.log(error);
+    if (!cobrancasData) {
+      return;
     }
-  }
+
+    const cobrancas = Array.isArray(cobrancasData?.cobrancas)
+      ? cobrancasData.cobrancas
+      : [];
+    const quantidade = Number(cobrancasData?.quantidadeCobrancas?.[0]?.count ?? 0);
+
+    setCobrancasListTemp(cobrancas);
+    setTotalCobrancas(quantidade);
+    setCobrancasList(cobrancas);
+    setCobrancasVencidas(
+      cobrancas.filter((d) => d.status.toLowerCase() === "vencida")
+    );
+    setCobrancasPrevistas(
+      cobrancas.filter((d) => d.status.toLowerCase() === "pendente")
+    );
+    setCobrancasPagas(cobrancas.filter((d) => d.status.toLowerCase() === "paga"));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    cobrancasData,
+    cobrancasError,
+    setCobrancasList,
+    setCobrancasListTemp,
+    setCobrancasPagas,
+    setCobrancasPrevistas,
+    setCobrancasVencidas,
+    setExibirToast,
+    setMensagemToast,
+    setTipoMensagem,
+    setTotalCobrancas,
+  ]);
 
   return (
     <>

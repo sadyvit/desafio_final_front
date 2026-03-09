@@ -5,6 +5,7 @@ import useAuth from "../../hooks/useAuth";
 import useGlobal from "../../hooks/useGlobal";
 import { useState } from "react";
 import { clienteEhInadimplente } from "../../utils/utils";
+import { useLazyGetClientesQuery } from "../../store/apiSlice";
 
 function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
   const {
@@ -28,6 +29,8 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
   const [erroValor, setErroValor] = useState("");
   const [salvarDadosCobranca, setSalvarDadosCobranca] = useState(false);
   const [statusCobranca, setStatusCobranca] = useState("paga");
+  const [getClientesQuery] = useLazyGetClientesQuery();
+  const [loading, setLoading] = useState(false);
 
   const { token } = useAuth();
 
@@ -81,27 +84,19 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
 
   async function getClientes() {
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/clientes?limit=1000&offset=0`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const data = await getClientesQuery({ limit: 1000, offset: 0 }).unwrap();
+      const clientes = Array.isArray(data?.clientes) ? data.clientes : [];
 
-      const data = await response.json();
-      setClientesList(data.clientes);
+      setClientesList(clientes);
       setClientesListTemp(
         clickFiltroClientes === "emDia"
-          ? data.clientes.filter((d) => !clienteEhInadimplente(d.status))
+          ? clientes.filter((d) => !clienteEhInadimplente(d.status))
           : clickFiltroClientes === "inadimplentes"
-          ? data.clientes.filter((d) => clienteEhInadimplente(d.status))
-          : data.clientes
+          ? clientes.filter((d) => clienteEhInadimplente(d.status))
+          : clientes
       );
-      setClientesInadimplentes(data.clientes.filter((d) => clienteEhInadimplente(d.status)));
-      setClientesEmDia(data.clientes.filter((d) => !clienteEhInadimplente(d.status)));
+      setClientesInadimplentes(clientes.filter((d) => clienteEhInadimplente(d.status)));
+      setClientesEmDia(clientes.filter((d) => !clienteEhInadimplente(d.status)));
     } catch (error) {
       console.log(error);
     }
@@ -109,6 +104,7 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (loading) return;
     if (salvarDadosCobranca === false) return;
 
     if (
@@ -143,44 +139,56 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
       `${process.env.REACT_APP_API_URL}/cobranca/${idCliente}`,
     ];
 
-    let response;
-    for (const endpoint of endpoints) {
-      response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-type": "Application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
+    try {
+      setLoading(true);
 
-      if (response.status !== 404) {
-        break;
+      let response;
+      for (const endpoint of endpoints) {
+        response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-type": "Application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body),
+        });
+
+        if (response.status !== 404) {
+          break;
+        }
       }
-    }
 
-    const contentType = response.headers.get("content-type") || "";
-    const data = contentType.includes("application/json")
-      ? await response.json()
-      : await response.text();
+      const contentType = response.headers.get("content-type") || "";
+      const data = contentType.includes("application/json")
+        ? await response.json()
+        : await response.text();
 
-    if (!response.ok) {
+      if (!response.ok) {
+        setExibirToast(true);
+        setTipoMensagem("erro");
+        setMensagemToast(
+          typeof data === "string" && data.trim() !== ""
+            ? data
+            : "Não foi possível cadastrar a cobrança"
+        );
+        return;
+      }
+
+      await getDetalharCobrancaCliente(idCliente);
+      await getClientes();
+      setExibirToast(true);
+      setTipoMensagem("sucesso");
+      setMensagemToast("Cobrança cadastrada com sucesso");
+      limparErros();
+      fecharModalCadastroCobranca();
+    } catch (error) {
+      console.log(error);
       setExibirToast(true);
       setTipoMensagem("erro");
-      setMensagemToast(
-        typeof data === "string" && data.trim() !== ""
-          ? data
-          : "Não foi possível cadastrar a cobrança"
-      );
-      return;
+      setMensagemToast("Não foi possível cadastrar a cobrança");
+    } finally {
+      setLoading(false);
     }
-    await getDetalharCobrancaCliente(idCliente);
-    await getClientes();
-    setExibirToast(true);
-    setTipoMensagem("sucesso");
-    setMensagemToast("Cobrança cadastrada com sucesso");
-    limparErros();
-    fecharModalCadastroCobranca();
   }
 
   return (
@@ -295,14 +303,23 @@ function ModalCadastrarCobranca({ getDetalharCobrancaCliente }) {
             <button
               onClick={cancelarCadastrarCobranca}
               className="cancelar-cadastro-cobranca"
+              disabled={loading}
             >
               Cancelar
             </button>
             <button
-              onClick={() => setSalvarDadosCobranca(true)}
               className="concluir-cadastro-cobranca"
+              onClick={() => setSalvarDadosCobranca(true)}
+              disabled={loading}
             >
-              Aplicar
+              {loading ? (
+                <span className="btn-loading">
+                  <span className="spinner" aria-hidden="true" />
+                  Aplicando...
+                </span>
+              ) : (
+                "Aplicar"
+              )}
             </button>
           </div>
         </form>

@@ -8,23 +8,24 @@ import UserMenu from "../../components/UserMenu";
 import TabelaDadosCobrancasDetalhe from "../../components/TabelaDadosCobrancaDetalhes";
 import TabelaDetalharCliente from "../../components/TabelaDetalharCliente";
 import { NavLink } from "react-router-dom";
-import useGlobal from "../../hooks/useGlobal";
 import ToastAlerta from "../../components/ToastAlerta";
 import ModalEditarCliente from "../../components/ModalEditarCliente";
 import ModalEditarCobranca from "../../components/ModalEditarCobranca";
 import ModalEditarUsuario from "../../components/ModalEditarUsuario";
 import ModalDetalheCobranca from "../../components/ModalDetalheCobranca";
 import ModalCadastrarCobranca from "../../components/ModalCadastrarCobranca";
-import useAuth from "../../hooks/useAuth";
 import { useEffect } from "react";
 import ModalSucessoAlterarCadastro from "../../components/ModalSucessoAlterarCadastro";
 import ModalExcluirCobranca from "../../components/ModalExcluirCobranca";
+import useGlobalUi from "../../hooks/global/useGlobalUi";
+import useGlobalDomain from "../../hooks/global/useGlobalDomain";
+import useGlobalListas from "../../hooks/global/useGlobalListas";
+import { useGetClienteByIdQuery, useGetCobrancasByClienteQuery } from "../../store/apiSlice";
 
 function DetalharCliente() {
   const {
     abrirEditarUsuario,
     abrirModalEditarCliente,
-    clienteDetalhado,
     abrirModalCadastroCobrancas,
     exibirToast,
     setExibirToast,
@@ -32,14 +33,30 @@ function DetalharCliente() {
     tipoMensagem,
     alteracaoUsuarioSucesso,
     setAlteracaoUsuarioSucesso,
-    setClienteDetalhado,
-    setCobrancasListDetalhar,
-    idCliente,
     abrirModalDetalharCobranca,
     abrirModalEdicaoCobranca,
     abrirModalExcluirCobranca,
-  } = useGlobal();
-  const { token } = useAuth();
+  } = useGlobalUi();
+
+  const {
+    clienteDetalhado,
+    setClienteDetalhado,
+    idCliente,
+  } = useGlobalDomain();
+
+  const { setCobrancasListDetalhar } = useGlobalListas();
+
+  const {
+    data: clienteData,
+    error: clienteError,
+    refetch: refetchCliente,
+  } = useGetClienteByIdQuery(idCliente, { skip: !idCliente });
+
+  const {
+    data: cobrancasClienteData,
+    error: cobrancasClienteError,
+    refetch: refetchCobrancasCliente,
+  } = useGetCobrancasByClienteQuery(idCliente, { skip: !idCliente });
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -61,63 +78,41 @@ function DetalharCliente() {
     };
   }, [exibirToast, setExibirToast]);
 
-  useEffect(() => {
-    getClienteDetalhado();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    getDetalharCobrancaCliente();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   async function getClienteDetalhado() {
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/clientes/${idCliente}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        setClienteDetalhado({});
-        return;
-      }
-
-      const data = await response.json();
-      setClienteDetalhado(data && typeof data === "object" ? data : {});
-    } catch (error) {
-      console.log(error);
-    }
+    await refetchCliente();
   }
 
   async function getDetalharCobrancaCliente() {
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/cobrancas/${idCliente}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        setCobrancasListDetalhar([]);
-        return;
-      }
-
-      const data = await response.json();
-      setCobrancasListDetalhar(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.log(error);
-    }
+    await refetchCobrancasCliente();
   }
+
+  useEffect(() => {
+    if (clienteError) {
+      setClienteDetalhado({});
+      return;
+    }
+
+    if (!clienteData) {
+      return;
+    }
+
+    setClienteDetalhado(clienteData && typeof clienteData === "object" ? clienteData : {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clienteData, clienteError]);
+
+  useEffect(() => {
+    if (cobrancasClienteError) {
+      setCobrancasListDetalhar([]);
+      return;
+    }
+
+    if (!cobrancasClienteData) {
+      return;
+    }
+
+    setCobrancasListDetalhar(Array.isArray(cobrancasClienteData) ? cobrancasClienteData : []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cobrancasClienteData, cobrancasClienteError]);
 
   return (
     <>

@@ -13,11 +13,12 @@ import Sidebar from "../../components/Sidebar";
 import ClientesTable from "../../components/TabelaClientes";
 import ToastAlerta from "../../components/ToastAlerta";
 import UserMenu from "../../components/UserMenu";
-import useAuth from "../../hooks/useAuth";
-import useGlobal from "../../hooks/useGlobal";
 import DivNaoEncontrado from "../../components/DivNaoEncontrado";
 import Paginacao from "../../components/Paginacao";
 import { clienteEhInadimplente } from "../../utils/utils";
+import useGlobalUi from "../../hooks/global/useGlobalUi";
+import useGlobalListas from "../../hooks/global/useGlobalListas";
+import { useLazyGetCobrancasByClienteQuery, useLazySearchClientesQuery, useGetClientesQuery } from "../../store/apiSlice";
 import "./styles.css";
 
 function Clientes() {
@@ -29,20 +30,28 @@ function Clientes() {
     setAbrirModalCadastroCliente,
     exibirToast,
     setExibirToast,
-    clientesList,
-    setClientesList,
-    setClientesListTemp,
-    abrirModalCadastroCobrancas,
     mensagemToast,
     tipoMensagem,
     setMensagemToast,
     setTipoMensagem,
-    setCobrancasListDetalhar,
     clickFiltroClientes,
     totalClientes,
     setTotalClientes,
-  } = useGlobal();
-  const { token } = useAuth();
+    abrirModalCadastroCobrancas,
+  } = useGlobalUi();
+
+  const {
+    clientesList,
+    setClientesList,
+    setClientesListTemp,
+    setCobrancasListDetalhar,
+  } = useGlobalListas();
+
+  const { data: clientesData, error: clientesError, refetch: refetchClientes } =
+    useGetClientesQuery({ limit: 1000, offset: 0 });
+  const [searchClientes] = useLazySearchClientesQuery();
+  const [getCobrancasByCliente] = useLazyGetCobrancasByClienteQuery();
+
   const [inputPesquisaClientes, setInputPesquisaClientes] = useState("");
   const [naoEncontrado, setNaoEncontrado] = useState(false);
   const [offset, setOffset] = useState(0);
@@ -67,26 +76,9 @@ function Clientes() {
     };
   }, [alteracaoUsuarioSucesso, setAlteracaoUsuarioSucesso]);
 
-  useEffect(() => {
-    getClientes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   async function getDetalharCobrancaCliente(idCliente) {
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/cobrancas/${idCliente}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (!response.ok) {
-        return;
-      }
-      const data = await response.json();
+      const data = await getCobrancasByCliente(idCliente).unwrap();
       setCobrancasListDetalhar(Array.isArray(data) ? data : []);
     } catch (error) {
       console.log(error);
@@ -94,58 +86,47 @@ function Clientes() {
   }
 
   async function getClientes() {
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/clientes?limit=1000&offset=0`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    await refetchClientes();
+  }
 
-      if (!response.ok) {
-        setExibirToast(true);
-        setTipoMensagem("erro");
-        setMensagemToast(
-          response.status === 401
-            ? "Sessão expirada. Faça login novamente."
-            : "Não foi possível carregar clientes."
-        );
-        return;
-      }
-
-      const data = await response.json();
-
-      const clientes = Array.isArray(data?.clientes) ? data.clientes : [];
-      const quantidade = Number(data?.quantidadeClientes?.[0]?.count ?? 0);
-
-      setClientesList(clientes);
-      const inadimplentes = clientes.filter((d) => clienteEhInadimplente(d.status));
-      const emDia = clientes.filter((d) => !clienteEhInadimplente(d.status));
-      setTotalClientes(
-        clickFiltroClientes === "emDia"
-          ? emDia.length
-          : clickFiltroClientes === "inadimplentes"
-          ? inadimplentes.length
-          : quantidade
-      );
-      setClientesListTemp(
-        clickFiltroClientes === "emDia"
-          ? emDia
-          : clickFiltroClientes === "inadimplentes"
-          ? inadimplentes
-          : clientes
-      );
-      setNaoEncontrado(clientes.length === 0);
-    } catch (error) {
-      console.log(error);
+  useEffect(() => {
+    if (clientesError) {
       setExibirToast(true);
       setTipoMensagem("erro");
-      setMensagemToast("Erro de conexão ao carregar clientes.");
+      setMensagemToast("Nao foi possivel carregar clientes.");
+      return;
     }
-  }
+
+    if (!clientesData) {
+      return;
+    }
+
+    const clientes = Array.isArray(clientesData?.clientes)
+      ? clientesData.clientes
+      : [];
+    const quantidade = Number(clientesData?.quantidadeClientes?.[0]?.count ?? 0);
+
+    setClientesList(clientes);
+    const inadimplentes = clientes.filter((d) => clienteEhInadimplente(d.status));
+    const emDia = clientes.filter((d) => !clienteEhInadimplente(d.status));
+
+    setTotalClientes(
+      clickFiltroClientes === "emDia"
+        ? emDia.length
+        : clickFiltroClientes === "inadimplentes"
+        ? inadimplentes.length
+        : quantidade
+    );
+    setClientesListTemp(
+      clickFiltroClientes === "emDia"
+        ? emDia
+        : clickFiltroClientes === "inadimplentes"
+        ? inadimplentes
+        : clientes
+    );
+    setNaoEncontrado(clientes.length === 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientesData, clientesError, clickFiltroClientes]);
 
   async function handlePesquisarClientes(event) {
     if (event.key !== "Enter") return;
@@ -157,28 +138,7 @@ function Clientes() {
     }
 
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_API_URL}/clientes/busca?busca=${inputPesquisaClientes}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        setExibirToast(true);
-        setTipoMensagem("erro");
-        setMensagemToast(
-          response.status === 401
-            ? "Sessão expirada. Faça login novamente."
-            : "Não foi possível pesquisar clientes."
-        );
-        return;
-      }
-
-      const data = await response.json();
+      const data = await searchClientes(inputPesquisaClientes).unwrap();
 
       if (!Array.isArray(data) || data.length === 0) {
         setNaoEncontrado(true);
@@ -191,7 +151,7 @@ function Clientes() {
       console.log(error);
       setExibirToast(true);
       setTipoMensagem("erro");
-      setMensagemToast("Erro de conexão ao pesquisar clientes.");
+      setMensagemToast("Nao foi possivel pesquisar clientes.");
     }
   }
 
