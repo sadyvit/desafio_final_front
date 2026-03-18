@@ -1,32 +1,94 @@
-![](https://i.imgur.com/xG74tOh.png)
+# FinTrack — Sistema de Gestão de Clientes e Cobranças
 
-# Desafio Final Módulo 5 - FRONTEND
-
-Este repositório deverá servir de base para ser realizado o fork para desenvolvimento da parte de **FRONTEND** do desafio.
-
-A URL deste repositório deverá ser entregue na plataforma de alunos da Cubos Academy na página da parte de FRONTEND do desafio.
-
-A versão final do código de cada sprint deverá estar na branch principal do repositório e sim, a cada semana acumulará as alterações das sprints, portanto a segunda sobrescrevendo a primeira e assim por diante.
+Aplicação web desenvolvida em **React** para gerenciamento completo de clientes e cobranças financeiras. Permite cadastrar e acompanhar clientes, registrar cobranças, visualizar status de inadimplência e controlar pagamentos — tudo em uma interface moderna e responsiva.
 
 ---
 
-No fork de vocês, favor alterar este README para adicionar os links correspondentes para os seguintes itens:
+## Funcionalidades
 
-**Repositório de Backend**: https://github.com/vsm-dv/back-integral-m05-desafio-t04
-
-**Repositório de Frontend**: https://github.com/vsm-dv/front-integral-m05-desafio-t04
-
-**URL da aplicação funcionando**: https://app-equipe4of.netlify.app/
+- **Autenticação**: login seguro com JWT, rotas protegidas e persistência de sessão
+- **Dashboard (Home)**: resumo de clientes em dia e inadimplentes, cobranças pagas, previstas e vencidas
+- **Gestão de Clientes**: listagem com busca, cadastro, edição e detalhamento completo por cliente
+- **Gestão de Cobranças**: listagem com busca, cadastro, edição, exclusão e visualização de detalhes
+- **Perfil do Usuário**: edição de dados cadastrais com feedback visual de sucesso
+- **Paginação e Filtros**: navegação paginada e filtragem por status nas tabelas
 
 ---
 
-E os itens abaixo, que deverão ser preenchidos apenas após a finalização de todas as sprints do projeto: 
+## Tecnologias
 
-**Pull Request (PR) de Backend**: https://github.com/cubos-academy/back-integral-m05-desafio-t04/pull/16
+| Camada | Tecnologia |
+|---|---|
+| Framework | React 18 |
+| Gerenciamento de estado | Redux Toolkit + RTK Query |
+| Roteamento | React Router DOM v7 |
+| UI Components | Material UI (MUI) v7 |
+| Estilização | CSS Modules |
+| HTTP / Cache | RTK Query (`createApi`) |
+| Build | Create React App |
 
-**Pull Request (PR) de Frontend**: https://github.com/cubos-academy/front-integral-m05-desafio-t04/pull/18
+---
 
-Estes Pull Requests (PRs) deverão ser criados a partir da branch principal do fork correspondente de vocês daquela stack tendo como destino o repositório base da stack do desafio.
+## Estrutura de Pastas
+
+```
+src/
+├── pages/          # Páginas principais (Home, Clientes, Cobranças, DetalharCliente, Login)
+├── components/     # Componentes reutilizáveis (modais, tabelas, sidebar, menus)
+├── store/          # Redux store, apiSlice (RTK Query), authSlice, globalSlice
+├── hooks/          # Hooks customizados (useAuth, useGlobal e domínios separados)
+├── context/        # AuthContext para controle de autenticação
+└── utils/          # Funções utilitárias (ex: verificação de inadimplência)
+```
+
+---
+
+## Como rodar localmente
+
+**Pré-requisitos:** Node.js 18+ e npm
+
+```bash
+# Clone o repositório
+git clone https://github.com/sadyvit/fintrack.git
+cd fintrack
+
+# Instale as dependências
+npm install
+
+# Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o .env com a URL da sua API backend
+
+# Suba a aplicação
+npm start
+```
+
+A aplicação estará disponível em `http://localhost:3000`.
+
+---
+
+## Variáveis de Ambiente
+
+| Variável | Descrição |
+|---|---|
+| `REACT_APP_API_URL` | URL base da API backend |
+
+---
+
+## Scripts disponíveis
+
+| Comando | Descrição |
+|---|---|
+| `npm start` | Inicia em modo de desenvolvimento |
+| `npm run build` | Gera o build de produção |
+| `npm test` | Executa os testes |
+
+---
+
+## Links
+
+- **Repositório Backend**: https://github.com/sadyvit/fintrack_api
+- **Deploy**: https://desafio-final-front-seven.vercel.app/
 
 Ou seja, o Pull Request de **FRONTEND** deverá ser criado a partir do fork de vocês desse repositório aqui, com destino a este repositório aqui.
 
